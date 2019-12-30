@@ -1,9 +1,9 @@
-QT       += core websockets
-QT       -= gui
+QT += core websockets
+QT -= gui
 
 TARGET = qtwsclient
-CONFIG   += console
-CONFIG   -= app_bundle
+CONFIG += console
+CONFIG -= app_bundle
 
 TEMPLATE = app
 
@@ -14,5 +14,5 @@ SOURCES += \
 HEADERS += \
     echoclient.h
 
-//target.path = $$[QT_INSTALL_EXAMPLES]/websockets/echoclient
+target.path = /usr/local/bin
 INSTALLS += target

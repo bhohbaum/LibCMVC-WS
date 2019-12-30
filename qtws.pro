@@ -4,6 +4,7 @@ SUBDIRS = qtwsclient \
 
 # build must be last:
 CONFIG += ordered
+CONFIG += static
 #SUBDIRS += build
 
 

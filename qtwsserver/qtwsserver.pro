@@ -1,8 +1,8 @@
 QT = websockets
 
 TARGET = qtwsserver
-CONFIG   += console
-CONFIG   -= app_bundle
+CONFIG += console
+CONFIG -= app_bundle
 
 TEMPLATE = app
 
@@ -17,5 +17,5 @@ EXAMPLE_FILES += sslechoclient.html
 
 RESOURCES += securesocketclient.qrc
 
-//target.path = $$[QT_INSTALL_EXAMPLES]/websockets/sslechoserver
+target.path = /usr/local/bin
 INSTALLS += target
