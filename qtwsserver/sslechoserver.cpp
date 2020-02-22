@@ -9,17 +9,16 @@
 QT_USE_NAMESPACE
 
 //! [constructor]
-SslEchoServer::SslEchoServer(quint16 port, QObject *parent) :
+SslEchoServer::SslEchoServer(quint16 port, QObject *parent, bool encrypted, QString cert, QString key) :
     QObject(parent),
     m_pWebSocketServer(nullptr)
 {
     m_pWebSocketServer = new QWebSocketServer(QStringLiteral("SSL Echo Server"),
-//                                              QWebSocketServer::SecureMode,
-                                              QWebSocketServer::NonSecureMode,
+                                              (encrypted) ? QWebSocketServer::SecureMode : QWebSocketServer::NonSecureMode,
                                               this);
     QSslConfiguration sslConfiguration;
-    QFile certFile(QStringLiteral(":/localhost.cert"));
-    QFile keyFile(QStringLiteral(":/localhost.key"));
+    QFile certFile(cert);
+    QFile keyFile(key);
     certFile.open(QIODevice::ReadOnly);
     keyFile.open(QIODevice::ReadOnly);
     QSslCertificate certificate(&certFile, QSsl::Pem);
@@ -30,13 +29,13 @@ SslEchoServer::SslEchoServer(quint16 port, QObject *parent) :
     sslConfiguration.setLocalCertificate(certificate);
     sslConfiguration.setPrivateKey(sslKey);
     sslConfiguration.setProtocol(QSsl::TlsV1SslV3);
-//    m_pWebSocketServer->setSslConfiguration(sslConfiguration);
+    if (encrypted) m_pWebSocketServer->setSslConfiguration(sslConfiguration);
 
     if (m_pWebSocketServer->listen(QHostAddress::Any, port))
     {
         qDebug() << "SSL Echo Server listening on port" << port;
         connect(m_pWebSocketServer, &QWebSocketServer::newConnection, this, &SslEchoServer::onNewConnection);
-//        connect(m_pWebSocketServer, &QWebSocketServer::sslErrors, this, &SslEchoServer::onSslErrors);
+        if (encrypted) connect(m_pWebSocketServer, &QWebSocketServer::sslErrors, this, &SslEchoServer::onSslErrors);
     }
 }
 //! [constructor]
@@ -69,7 +68,7 @@ void SslEchoServer::processTextMessage(QString message)
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
     if (pClient) {
         for (int i = 0; i < m_clients.count(); i++) {
-            if (m_clients[i]->request().url().path() == pClient->request().url().path()) {
+            if (m_clients[i]->request().url().path() == pClient->request().url().path() && pClient != m_clients[i]) {
                 m_clients[i]->sendTextMessage(message);
             }
         }
@@ -83,7 +82,7 @@ void SslEchoServer::processBinaryMessage(QByteArray message)
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
     if (pClient) {
         for (int i = 0; i < m_clients.count(); i++) {
-            if (m_clients[i]->request().url().path() == pClient->request().url().path()) {
+            if (m_clients[i]->request().url().path() == pClient->request().url().path() && pClient != m_clients[i]) {
                 m_clients[i]->sendBinaryMessage(message);
             }
         }
@@ -105,6 +104,6 @@ void SslEchoServer::socketDisconnected()
 
 void SslEchoServer::onSslErrors(const QList<QSslError> &)
 {
-    qDebug() << "Ssl errors occurred";
+    qDebug() << "SSL error occurred";
 }
 //! [socketDisconnected]

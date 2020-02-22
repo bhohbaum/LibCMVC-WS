@@ -13,7 +13,7 @@ class SslEchoServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit SslEchoServer(quint16 port, QObject *parent = nullptr);
+    explicit SslEchoServer(quint16 port, QObject *parent = nullptr, bool encrypted = false, QString cert = "", QString key = "");
     ~SslEchoServer() override;
 
 private Q_SLOTS:
@@ -26,7 +26,7 @@ private Q_SLOTS:
 private:
     QWebSocketServer *m_pWebSocketServer;
     QList<QWebSocket *> m_clients;
-//    QMap<QString, QList<QWebSocket *> *> m_sessions;
+
 };
 
 #endif //SSLECHOSERVER_H
