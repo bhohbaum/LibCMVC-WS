@@ -5,8 +5,8 @@ int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
     unsigned short p = 8888;
     bool encrypted = false;
-    QString certificate(":/localhost.cert");
-    QString key(":/localhost.key");
+    QString certificate("qrc:/localhost.cert");
+    QString key("qrc:/localhost.key");
 
     if (argc == 2) {
         QString port(argv[1]);
