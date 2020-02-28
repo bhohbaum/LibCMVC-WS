@@ -16,6 +16,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onConnected();
     void onTextMessageReceived(QString message);
+    void onSslErrors(const QList<QSslError> &errors);
 
 private:
     QWebSocket m_webSocket;

@@ -13,6 +13,8 @@ EchoClient::EchoClient(const QUrl &url, bool debug, QObject *parent) :
     if (m_debug) qDebug() << "WebSocket server:" << url;
     connect(&m_webSocket, &QWebSocket::connected, this, &EchoClient::onConnected);
     connect(&m_webSocket, &QWebSocket::disconnected, this, &EchoClient::closed);
+    connect(&m_webSocket, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), this, &EchoClient::onSslErrors);
+
     m_webSocket.open(QUrl(url));
 }
 //! [constructor]
@@ -46,3 +48,19 @@ void EchoClient::onTextMessageReceived(QString message)
     m_webSocket.close();
 }
 //! [onTextMessageReceived]
+
+void EchoClient::onSslErrors(const QList<QSslError> &errors)
+{
+    //Q_UNUSED(errors);
+
+    foreach (QSslError e, errors) {
+        qDebug() << "SSL error:" << e.errorString();
+    }
+    // WARNING: Never ignore SSL errors in production code.
+    // The proper way to handle self-signed certificates is to add a custom root
+    // to the CA store.
+
+    qDebug() << "Trying to ignore the error(s) and go on....";
+
+    m_webSocket.ignoreSslErrors();
+}

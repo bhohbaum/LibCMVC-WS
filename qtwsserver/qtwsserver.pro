@@ -13,8 +13,6 @@ SOURCES += \
 HEADERS += \
     sslechoserver.h
 
-EXAMPLE_FILES += sslechoclient.html
-
 RESOURCES += securesocketclient.qrc
 
 target.path = /usr/local/bin

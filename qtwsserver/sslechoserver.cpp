@@ -37,6 +37,8 @@ SslEchoServer::SslEchoServer(quint16 port, QObject *parent, bool encrypted, QStr
         qDebug() << "WS PubSub Server listening on port" << port;
         connect(m_pWebSocketServer, &QWebSocketServer::newConnection, this, &SslEchoServer::onNewConnection);
         if (encrypted) connect(m_pWebSocketServer, &QWebSocketServer::sslErrors, this, &SslEchoServer::onSslErrors);
+    } else {
+        qDebug() << "Error binding socket!!";
     }
 }
 //! [constructor]
@@ -52,7 +54,7 @@ void SslEchoServer::onNewConnection()
 {
     QWebSocket *pSocket = m_pWebSocketServer->nextPendingConnection();
 
-    qDebug() << "Client connected:" << pSocket->peerName() << pSocket->origin();
+    qDebug() << "Client connected:" << pSocket->peerName() << pSocket->origin() << pSocket->peerAddress().toString() << pSocket->peerPort() << pSocket->requestUrl().toString();
 
     connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
     connect(pSocket, &QWebSocket::binaryMessageReceived, this, &SslEchoServer::processBinaryMessage);
