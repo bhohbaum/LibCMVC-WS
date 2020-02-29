@@ -8,13 +8,15 @@
 
 QT_USE_NAMESPACE
 
-//! [constructor]
-SslEchoServer::SslEchoServer(quint16 port, QObject *parent, bool encrypted, QString cert, QString key) :
+SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject *parent, bool encrypted, QString cert, QString key) :
     QObject(parent),
     m_pWebSocketServer(nullptr)
 {
     m_pWebSocketServer = new QWebSocketServer(QStringLiteral("WS PubSub Server"),
-                                              (encrypted) ? QWebSocketServer::SecureMode : QWebSocketServer::NonSecureMode,
+                                              QWebSocketServer::NonSecureMode,
+                                              this);
+    m_pWebSocketServerSSL = new QWebSocketServer(QStringLiteral("WS PubSub SSL Server"),
+                                              QWebSocketServer::SecureMode,
                                               this);
     if (encrypted) {
         QSslConfiguration sslConfiguration;
@@ -31,40 +33,64 @@ SslEchoServer::SslEchoServer(quint16 port, QObject *parent, bool encrypted, QStr
         sslConfiguration.setPrivateKey(sslKey);
         //sslConfiguration.setProtocol(QSsl::TlsV1SslV3);
         sslConfiguration.setProtocol(QSsl::SecureProtocols);
-        m_pWebSocketServer->setSslConfiguration(sslConfiguration);
+        m_pWebSocketServerSSL->setSslConfiguration(sslConfiguration);
+        if (sslPort != 0) {
+            if (m_pWebSocketServerSSL->listen(QHostAddress::Any, sslPort)) {
+                qDebug() << "WS PubSub SSL Server listening on port" << sslPort;
+                connect(m_pWebSocketServerSSL, &QWebSocketServer::newConnection, this, &SslEchoServer::onNewSSLConnection);
+                connect(m_pWebSocketServerSSL, &QWebSocketServer::sslErrors, this, &SslEchoServer::onSslErrors);
+            } else {
+                qDebug() << "Error binding SSL socket!!";
+            }
+        }
     }
-    if (m_pWebSocketServer->listen(QHostAddress::Any, port)) {
-        qDebug() << "WS PubSub Server listening on port" << port;
-        connect(m_pWebSocketServer, &QWebSocketServer::newConnection, this, &SslEchoServer::onNewConnection);
-        if (encrypted) connect(m_pWebSocketServer, &QWebSocketServer::sslErrors, this, &SslEchoServer::onSslErrors);
-    } else {
-        qDebug() << "Error binding socket!!";
+    if (port != 0) {
+        if (m_pWebSocketServer->listen(QHostAddress::Any, port)) {
+            qDebug() << "WS PubSub Server listening on port" << port;
+            connect(m_pWebSocketServer, &QWebSocketServer::newConnection, this, &SslEchoServer::onNewConnection);
+        } else {
+            qDebug() << "Error binding PLAIN socket!!";
+        }
     }
 }
-//! [constructor]
 
 SslEchoServer::~SslEchoServer()
 {
     m_pWebSocketServer->close();
+    m_pWebSocketServerSSL->close();
     qDeleteAll(m_clients.begin(), m_clients.end());
 }
 
-//! [onNewConnection]
 void SslEchoServer::onNewConnection()
 {
-    QWebSocket *pSocket = m_pWebSocketServer->nextPendingConnection();
-
-    qDebug() << "Client connected:" << pSocket->peerName() << pSocket->origin() << pSocket->peerAddress().toString() << pSocket->peerPort() << pSocket->requestUrl().toString();
-
-    connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
-    connect(pSocket, &QWebSocket::binaryMessageReceived, this, &SslEchoServer::processBinaryMessage);
-    connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
-
-    m_clients << pSocket;
+    qDebug() << "New PLAIN connection...";
+    QWebSocket *pSocket;
+    pSocket = m_pWebSocketServer->nextPendingConnection();
+    while (pSocket != nullptr) {
+        qDebug() << "PLAIN Client connected:" << pSocket->peerName() << pSocket->origin() << pSocket->peerAddress().toString() << pSocket->peerPort() << pSocket->requestUrl().toString();
+        connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
+        connect(pSocket, &QWebSocket::binaryMessageReceived, this, &SslEchoServer::processBinaryMessage);
+        connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
+        m_clients << pSocket;
+        pSocket = m_pWebSocketServer->nextPendingConnection();
+    }
 }
-//! [onNewConnection]
 
-//! [processTextMessage]
+void SslEchoServer::onNewSSLConnection()
+{
+    qDebug() << "New SSL connection...";
+    QWebSocket *pSocket;
+    pSocket = m_pWebSocketServerSSL->nextPendingConnection();
+    while (pSocket != nullptr) {
+        qDebug() << "SSL Client connected:" << pSocket->peerName() << pSocket->origin() << pSocket->peerAddress().toString() << pSocket->peerPort() << pSocket->requestUrl().toString();
+        connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
+        connect(pSocket, &QWebSocket::binaryMessageReceived, this, &SslEchoServer::processBinaryMessage);
+        connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
+        m_clients << pSocket;
+        pSocket = m_pWebSocketServerSSL->nextPendingConnection();
+    }
+}
+
 void SslEchoServer::processTextMessage(QString message)
 {
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
@@ -79,10 +105,10 @@ void SslEchoServer::processTextMessage(QString message)
     }
     qDebug() << "Distributing event to" << ctr << "clients. Channel:" << pClient->request().url().path()
              << "Message:" << message;
+    qDebug() << "Total number of clients:" << m_clients.count();
 }
-//! [processTextMessage]
 
-//! [processBinaryMessage]
+
 void SslEchoServer::processBinaryMessage(QByteArray message)
 {
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
@@ -94,9 +120,8 @@ void SslEchoServer::processBinaryMessage(QByteArray message)
         }
     }
 }
-//! [processBinaryMessage]
 
-//! [socketDisconnected]
+
 void SslEchoServer::socketDisconnected()
 {
     qDebug() << "Client disconnected";
@@ -114,4 +139,3 @@ void SslEchoServer::onSslErrors(const QList<QSslError> &errors)
         qDebug() << errors.at(i).errorString();
     }
 }
-//! [socketDisconnected]

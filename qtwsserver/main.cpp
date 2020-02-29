@@ -3,7 +3,8 @@
 
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
-    unsigned short p = 8888;
+    unsigned short p = 0;
+    unsigned short ps = 0;
     bool encrypted = false;
     QString certificate("qrc:/localhost.cert");
     QString key("qrc:/localhost.key");
@@ -26,10 +27,12 @@ int main(int argc, char *argv[]) {
         }
         if (QString::compare(QString(argv[i]), QString("-s")) == 0 || QString::compare(QString(argv[i]), QString("-e")) == 0) {
             encrypted = true;
+            QString port(argv[i + 1]);
+            ps = static_cast<unsigned short>(port.toShort());
         }
     }
 
-    SslEchoServer server(p, nullptr, encrypted, certificate, key);
+    SslEchoServer server(p, ps, nullptr, encrypted, certificate, key);
     Q_UNUSED(server)
 
     return a.exec();
