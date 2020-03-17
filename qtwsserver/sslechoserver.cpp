@@ -162,7 +162,6 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             }
         }
     }
-    int ctr = 0, ctr2 = 0;
     if (message == BACKBONE_REGISTRATION_MSG) {
         if (pClient) {
             m_clients.removeAll(pClient);
@@ -173,6 +172,7 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
                      << pClient->requestUrl().toString();
         }
     } else {
+        int ctr = 0, ctr2 = 0;
         if (pClient) {
             for (int i = 0; i < m_clients.count(); i++) {
                 if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
