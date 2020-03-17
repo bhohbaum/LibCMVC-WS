@@ -14,6 +14,7 @@ HEADERS += \
     sslechoserver.h
 
 RESOURCES += securesocketclient.qrc
+DISTFILES += $$RESOURCES
 
 target.path = /usr/local/bin
 INSTALLS += target

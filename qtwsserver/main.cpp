@@ -8,6 +8,7 @@ int main(int argc, char *argv[]) {
     bool encrypted = false;
     QString certificate("qrc:/localhost.cert");
     QString key("qrc:/localhost.key");
+    QString bbUrl("");
 
     if (argc == 2) {
         QString port(argv[1]);
@@ -30,9 +31,12 @@ int main(int argc, char *argv[]) {
             QString port(argv[i + 1]);
             ps = static_cast<unsigned short>(port.toShort());
         }
+        if (QString::compare(QString(argv[i]), QString("-b")) == 0) {
+            bbUrl = QString(argv[i + 1]);
+        }
     }
 
-    SslEchoServer server(p, ps, nullptr, encrypted, certificate, key);
+    SslEchoServer server(p, ps, nullptr, encrypted, certificate, key, bbUrl);
     Q_UNUSED(server)
 
     return a.exec();
