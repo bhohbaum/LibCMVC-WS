@@ -1,7 +1,8 @@
-#include <QtCore/QCoreApplication>
 #include "sslechoserver.h"
+#include <QtCore/QCoreApplication>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[])
+{
     QCoreApplication a(argc, argv);
     unsigned short p = 0;
     unsigned short ps = 0;
@@ -37,7 +38,10 @@ int main(int argc, char *argv[]) {
     }
 
     SslEchoServer server(p, ps, nullptr, encrypted, certificate, key, bbUrl);
-    Q_UNUSED(server)
+    if (!server.startupComplete) {
+        return 1;
+    }
+    //Q_UNUSED(server)
 
     return a.exec();
 }

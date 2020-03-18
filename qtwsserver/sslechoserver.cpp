@@ -26,11 +26,11 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
         QFile certFile(cert);
         QFile keyFile(key);
         if (!certFile.open(QIODevice::ReadOnly)) {
-            qDebug() << "Error opening SSL certificate." << sslPort;
+            qDebug() << "Error opening SSL certificate.";
             return;
         }
         if (!keyFile.open(QIODevice::ReadOnly)) {
-            qDebug() << "Error opening SSL key." << sslPort;
+            qDebug() << "Error opening SSL key.";
             return;
         }
         QSslCertificate certificate(&certFile, QSsl::Pem);
@@ -89,6 +89,15 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
             &SslEchoServer::onSslErrors);
         QUrl u1(m_sBackbone);
         m_pWebSocketBackbone->open(QUrl(u1.scheme().append("://").append(u1.host()).append(":").append(QString::number(u1.port()))));
+        connect(m_pWebSocketBackbone,
+            &QWebSocket::textMessageReceived,
+            this,
+            &SslEchoServer::processTextMessageBB);
+        connect(m_pWebSocketBackbone,
+            &QWebSocket::binaryMessageReceived,
+            this,
+            &SslEchoServer::processBinaryMessageBB);
+        m_backbones.removeAll(m_pWebSocketBackbone);
         m_backbones << m_pWebSocketBackbone;
     }
     startupComplete = true;
@@ -99,6 +108,7 @@ SslEchoServer::~SslEchoServer()
     m_pWebSocketServer->close();
     m_pWebSocketServerSSL->close();
     qDeleteAll(m_clients.begin(), m_clients.end());
+    qDeleteAll(m_backbones.begin(), m_backbones.end());
 }
 
 void SslEchoServer::onNewConnection()
@@ -116,6 +126,7 @@ void SslEchoServer::onNewConnection()
             this,
             &SslEchoServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
+        m_clients.removeAll(pSocket);
         m_clients << pSocket;
         pSocket = m_pWebSocketServer->nextPendingConnection();
     }
@@ -140,6 +151,7 @@ void SslEchoServer::onNewSSLConnection()
             QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),
             this,
             &SslEchoServer::onSslErrors);
+        m_clients.removeAll(pSocket);
         m_clients << pSocket;
         pSocket = m_pWebSocketServerSSL->nextPendingConnection();
     }
@@ -167,6 +179,7 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
     if (message == BACKBONE_REGISTRATION_MSG) {
         if (pClient) {
             m_clients.removeAll(pClient);
+            m_backbones.removeAll(pClient);
             m_backbones << pClient;
             qDebug() << "Client identified as another server, moving connection to backbone pool:"
                      << pClient->peerName() << pClient->origin()
@@ -241,14 +254,6 @@ void SslEchoServer::onSslErrors(const QList<QSslError>& errors)
 
 void SslEchoServer::onBackboneConnected()
 {
-    connect(m_pWebSocketBackbone,
-        &QWebSocket::textMessageReceived,
-        this,
-        &SslEchoServer::processTextMessageBB);
-    connect(m_pWebSocketBackbone,
-        &QWebSocket::binaryMessageReceived,
-        this,
-        &SslEchoServer::processBinaryMessageBB);
     m_pWebSocketBackbone->sendTextMessage(BACKBONE_REGISTRATION_MSG);
 }
 
@@ -264,6 +269,7 @@ void SslEchoServer::restoreBackboneConnection()
 {
     QUrl u1(m_sBackbone);
     m_pWebSocketBackbone->open(QUrl(u1.scheme().append("://").append(u1.host()).append(":").append(QString::number(u1.port()))));
+    m_backbones.removeAll(m_pWebSocketBackbone);
     m_backbones << m_pWebSocketBackbone;
 }
 

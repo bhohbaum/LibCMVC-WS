@@ -17,6 +17,8 @@ public:
     explicit SslEchoServer(quint16 port, quint16 sslPort, QObject* parent = nullptr, bool encrypted = false, QString cert = "", QString key = "", QString bbUrl = "");
     ~SslEchoServer() override;
 
+    bool startupComplete = false;
+
 private Q_SLOTS:
     void onNewConnection();
     void onNewSSLConnection();
@@ -39,8 +41,6 @@ private:
     QList<QWebSocket*> m_backbones;
 
     QString m_sBackbone = "";
-
-    bool startupComplete = false;
 };
 
 #endif //SSLECHOSERVER_H
