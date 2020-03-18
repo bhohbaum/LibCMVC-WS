@@ -1,6 +1,8 @@
 #include "sslechoserver.h"
 #include "QtWebSockets/QWebSocket"
 #include "QtWebSockets/QWebSocketServer"
+#include <QThread>
+#include <QTimer>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtNetwork/QSslCertificate>
@@ -222,6 +224,7 @@ void SslEchoServer::socketDisconnected()
              << pClient->requestUrl().toString();
     if (pClient) {
         m_clients.removeAll(pClient);
+        m_backbones.removeAll(pClient);
         pClient->deleteLater();
     }
 }
@@ -251,7 +254,14 @@ void SslEchoServer::onBackboneConnected()
 
 void SslEchoServer::onBackboneDisconnected()
 {
+    qDebug() << "Backbone disconnected. Restoring connection....";
     m_backbones.removeAll(m_pWebSocketBackbone);
+    QTimer* timer = new QTimer(this);
+    timer->singleShot(1000, this, SLOT(restoreBackboneConnection()));
+}
+
+void SslEchoServer::restoreBackboneConnection()
+{
     QUrl u1(m_sBackbone);
     m_pWebSocketBackbone->open(QUrl(u1.scheme().append("://").append(u1.host()).append(":").append(QString::number(u1.port()))));
     m_backbones << m_pWebSocketBackbone;

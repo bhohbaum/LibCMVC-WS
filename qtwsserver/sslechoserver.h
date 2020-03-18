@@ -29,8 +29,7 @@ private Q_SLOTS:
     void onSslErrors(const QList<QSslError>& errors);
     void onBackboneConnected();
     void onBackboneDisconnected();
-
-    bool startupComplete = false;
+    void restoreBackboneConnection();
 
 private:
     QWebSocketServer *m_pWebSocketServer, *m_pWebSocketServerSSL;
@@ -40,6 +39,8 @@ private:
     QList<QWebSocket*> m_backbones;
 
     QString m_sBackbone = "";
+
+    bool startupComplete = false;
 };
 
 #endif //SSLECHOSERVER_H
