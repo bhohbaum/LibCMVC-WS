@@ -88,6 +88,7 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
             this,
             &SslEchoServer::onSslErrors);
         QUrl u1(m_sBackbone);
+        //m_pWebSocketBackbone->open(u1);
         m_pWebSocketBackbone->open(QUrl(u1.scheme().append("://").append(u1.host()).append(":").append(QString::number(u1.port()))));
         connect(m_pWebSocketBackbone,
             &QWebSocket::textMessageReceived,
@@ -181,6 +182,8 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             m_clients.removeAll(pClient);
             m_backbones.removeAll(pClient);
             m_backbones << pClient;
+            pClient->request().url().setPath("/");
+            pClient->requestUrl().setPath("/");
             qDebug() << "Client identified as another server, moving connection to backbone pool:"
                      << pClient->peerName() << pClient->origin()
                      << pClient->peerAddress().toString() << pClient->peerPort()
@@ -254,6 +257,15 @@ void SslEchoServer::onSslErrors(const QList<QSslError>& errors)
 
 void SslEchoServer::onBackboneConnected()
 {
+    for (int b = 0; b < m_backbones.count(); b++) {
+        m_backbones[b]->request().url().setPath("/");
+        m_backbones[b]->requestUrl().setPath("/");
+    }
+    QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
+    pClient->request().url().setPath("/");
+    pClient->requestUrl().setPath("/");
+    m_pWebSocketBackbone->request().url().setPath("/");
+    m_pWebSocketBackbone->requestUrl().setPath("/");
     m_pWebSocketBackbone->sendTextMessage(BACKBONE_REGISTRATION_MSG);
 }
 
@@ -268,7 +280,10 @@ void SslEchoServer::onBackboneDisconnected()
 void SslEchoServer::restoreBackboneConnection()
 {
     QUrl u1(m_sBackbone);
+    //m_pWebSocketBackbone->open(u1);
     m_pWebSocketBackbone->open(QUrl(u1.scheme().append("://").append(u1.host()).append(":").append(QString::number(u1.port()))));
+    m_pWebSocketBackbone->request().url().setPath("/");
+    m_pWebSocketBackbone->requestUrl().setPath("/");
     m_backbones.removeAll(m_pWebSocketBackbone);
     m_backbones << m_pWebSocketBackbone;
 }
