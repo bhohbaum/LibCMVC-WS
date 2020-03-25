@@ -38,6 +38,7 @@ private:
     QWebSocket* m_pWebSocketBackbone;
 
     QList<QWebSocket*> m_clients;
+    QMap<QString, QList<QWebSocket*>> m_channels;
     QList<QWebSocket*> m_backbones;
 
     QString m_sBackbone = "";

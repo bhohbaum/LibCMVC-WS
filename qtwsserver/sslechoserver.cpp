@@ -129,6 +129,7 @@ void SslEchoServer::onNewConnection()
         connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
         m_clients.removeAll(pSocket);
         m_clients << pSocket;
+        //m_channels[pSocket->request().url().path()].append(pSocket);
         pSocket = m_pWebSocketServer->nextPendingConnection();
     }
 }
@@ -154,6 +155,7 @@ void SslEchoServer::onNewSSLConnection()
             &SslEchoServer::onSslErrors);
         m_clients.removeAll(pSocket);
         m_clients << pSocket;
+        //m_channels[pSocket->request().url().path()].append(pSocket);
         pSocket = m_pWebSocketServerSSL->nextPendingConnection();
     }
 }
@@ -192,6 +194,18 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
     } else {
         int ctr = 0, ctr2 = 0;
         if (pClient) {
+            /*
+            QList<QWebSocket*>::iterator iter = m_channels.find(pClient->request().url().path())->begin();
+            const QList<QWebSocket*>::iterator end = m_channels.find(pClient->request().url().path())->end();
+            for (; iter != end; ++iter) {
+                (*iter)->sendTextMessage(message);
+            }
+
+            for (int i = 0; i < m_channels.find(pClient->request().url().path())->count(); i++) {
+                QWebSocket* pSocket = m_channels.find(pClient->request().url().path())->at(i);
+                pSocket->sendTextMessage(message);
+            }
+*/
             for (int i = 0; i < m_clients.count(); i++) {
                 if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
                     m_clients[i]->sendTextMessage(message);
@@ -240,6 +254,7 @@ void SslEchoServer::socketDisconnected()
              << pClient->requestUrl().toString();
     if (pClient) {
         m_clients.removeAll(pClient);
+        //m_channels.find(pClient->request().url().path())->removeAll(pClient);
         m_backbones.removeAll(pClient);
         pClient->deleteLater();
     }
