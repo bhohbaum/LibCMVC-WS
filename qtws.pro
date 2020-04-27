@@ -1,10 +1,13 @@
 TEMPLATE = subdirs
-SUBDIRS = qtwsclient \
-          qtwsserver
+SUBDIRS = \
+	qtws \
+	qtwsclient \
+	qtwsserver \
 
-# build must be last:
+
 CONFIG += ordered
+
+# do a static build if requested. otherwise this flag is ignored.
 CONFIG += static
-#SUBDIRS += build
 
 

@@ -122,10 +122,7 @@ void SslEchoServer::onNewConnection()
                  << pSocket->peerAddress().toString() << pSocket->peerPort()
                  << pSocket->requestUrl().toString();
         connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
-        connect(pSocket,
-            &QWebSocket::binaryMessageReceived,
-            this,
-            &SslEchoServer::processBinaryMessage);
+        connect(pSocket, &QWebSocket::binaryMessageReceived, this, &SslEchoServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
         m_clients.removeAll(pSocket);
         m_clients << pSocket;
@@ -231,6 +228,8 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
 
 void SslEchoServer::processBinaryMessage(QByteArray message)
 {
+    __processBinaryMessage(message, "");
+    /*
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     int ctr = 0;
     if (pClient) {
@@ -244,6 +243,81 @@ void SslEchoServer::processBinaryMessage(QByteArray message)
     qDebug() << "Distributing event to" << ctr << "clients. Channel:" << pClient->request().url().path()
              << "Message:" << message;
     qDebug() << "Total number of clients:" << m_clients.count();
+*/
+}
+
+void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
+{
+    QByteArray ba;
+    QString msg(message);
+    if (QtWS::gzipDecompress(message, ba)) {
+        msg = ba;
+        message = ba;
+    }
+    QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
+    channel = (channel == "") ? pClient->request().url().path() : channel;
+    if (channel == "/") {
+        for (int i = 0; i < m_backbones.count(); i++) {
+            if (pClient == m_backbones[i]) {
+                QStringList arr = msg.split("\n");
+                channel = arr[0];
+                arr.pop_front();
+                msg = arr.join("\n");
+            }
+        }
+    }
+    if (message == BACKBONE_REGISTRATION_MSG) {
+        if (pClient) {
+            m_clients.removeAll(pClient);
+            m_backbones.removeAll(pClient);
+            m_backbones << pClient;
+            pClient->request().url().setPath("/");
+            pClient->requestUrl().setPath("/");
+            qDebug() << "Client identified as another server, moving connection to backbone pool:"
+                     << pClient->peerName() << pClient->origin()
+                     << pClient->peerAddress().toString() << pClient->peerPort()
+                     << pClient->requestUrl().toString();
+        }
+    } else {
+        int ctr = 0, ctr2 = 0;
+        if (pClient) {
+            /*
+            QList<QWebSocket*>::iterator iter = m_channels.find(pClient->request().url().path())->begin();
+            const QList<QWebSocket*>::iterator end = m_channels.find(pClient->request().url().path())->end();
+            for (; iter != end; ++iter) {
+                (*iter)->sendTextMessage(message);
+            }
+
+            for (int i = 0; i < m_channels.find(pClient->request().url().path())->count(); i++) {
+                QWebSocket* pSocket = m_channels.find(pClient->request().url().path())->at(i);
+                pSocket->sendTextMessage(message);
+            }
+            */
+            for (int i = 0; i < m_clients.count(); i++) {
+                if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
+                    QByteArray ba;
+                    QtWS::gzipCompress(message, ba, 9);
+                    m_clients[i]->sendBinaryMessage(ba);
+                    ctr++;
+                }
+            }
+            QString bbMessage(channel);
+            bbMessage.append("\n");
+            bbMessage.append(message);
+            for (int i = 0; i < m_backbones.count(); i++) {
+                if (pClient != m_backbones[i]) {
+                    QByteArray ba;
+                    QtWS::gzipCompress(bbMessage.toUtf8(), ba, 9);
+                    m_backbones[i]->sendBinaryMessage(ba);
+                    ctr2++;
+                }
+            }
+        }
+        qDebug() << "Distributing event to" << ctr << "clients and" << ctr2
+                 << "other servers. Channel:" << channel << "Message:" << message;
+    }
+    qDebug() << "Total number of clients:" << m_clients.count()
+             << "Connections to other servers:" << m_backbones.count();
 }
 
 void SslEchoServer::socketDisconnected()
@@ -314,5 +388,15 @@ void SslEchoServer::processTextMessageBB(QString message)
 
 void SslEchoServer::processBinaryMessageBB(QByteArray message)
 {
-    processBinaryMessage(message);
+    QByteArray ba;
+    QString msg(message);
+    if (QtWS::gzipDecompress(message, ba)) {
+        msg = ba;
+        message = ba;
+    }
+    QStringList arr = msg.split("\n");
+    QString channel = arr[0];
+    arr.pop_front();
+    msg = arr.join("\n");
+    __processBinaryMessage(msg.toUtf8(), channel);
 }

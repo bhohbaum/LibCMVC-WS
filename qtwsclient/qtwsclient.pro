@@ -8,11 +8,16 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 SOURCES += \
-    main.cpp \
-    echoclient.cpp
+	main.cpp \
+	echoclient.cpp \
+
 
 HEADERS += \
-    echoclient.h
+	echoclient.h \
+	../qtws/qtws.h \
+
+
+LIBS += -L../qtws/ -lqtws -lz
 
 target.path = /usr/local/bin
 INSTALLS += target

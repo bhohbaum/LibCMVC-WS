@@ -7,11 +7,15 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 SOURCES += \
-    main.cpp \
-    sslechoserver.cpp
+	main.cpp \
+	sslechoserver.cpp \
+
 
 HEADERS += \
-    sslechoserver.h
+	sslechoserver.h \
+	../qtws/qtws.h \
+
+LIBS += -L../qtws/ -lqtws -lz
 
 RESOURCES += securesocketclient.qrc
 DISTFILES += $$RESOURCES

@@ -1,24 +1,32 @@
-#include <QtCore/QCoreApplication>
-#include <QtCore/QCommandLineParser>
-#include <QtCore/QCommandLineOption>
 #include "echoclient.h"
+#include <QtCore/QCommandLineOption>
+#include <QtCore/QCommandLineParser>
+#include <QtCore/QCoreApplication>
 
-void quit_app() {
+void quit_app()
+{
     QCoreApplication::quit();
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[])
+{
     QCoreApplication a(argc, argv);
 
     QCommandLineParser parser;
     parser.setApplicationDescription("LibCMVC Websocket Client");
     parser.addHelpOption();
 
-    QCommandLineOption dbgOption(QStringList() << "d" << "debug",
-            QCoreApplication::translate("main", "Debug output [default: off]."));
+    QCommandLineOption dbgOption(QStringList() << "d"
+                                               << "debug",
+        QCoreApplication::translate("main", "Debug output [default: off]."));
     parser.addOption(dbgOption);
+    QCommandLineOption compressOption(QStringList() << "c"
+                                                    << "compress",
+        QCoreApplication::translate("main", "Compress data for transmission [default: plain text]."));
+    parser.addOption(compressOption);
     parser.process(a);
     bool debug = parser.isSet(dbgOption);
+    bool comp = parser.isSet(compressOption);
 
     QString serverLocation = "";
     for (int i = 0; i < argc; i++) {
@@ -29,7 +37,7 @@ int main(int argc, char *argv[]) {
     }
 
     serverLocation.replace("\n", "").replace("\r", "");
-    EchoClient client(QUrl(serverLocation), debug);
+    EchoClient client(QUrl(serverLocation), debug, comp);
     QObject::connect(&client, &EchoClient::closed, &a, &quit_app);
 
     return a.exec();

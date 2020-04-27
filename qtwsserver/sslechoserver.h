@@ -6,6 +6,8 @@
 #include <QtCore/QObject>
 #include <QtNetwork/QSslError>
 
+#include "../qtws/qtws.h"
+
 QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
 
@@ -25,6 +27,7 @@ private Q_SLOTS:
     void processTextMessage(QString message);
     void __processTextMessage(QString message, QString channel = "");
     void processBinaryMessage(QByteArray message);
+    void __processBinaryMessage(QByteArray message, QString channel = "");
     void processTextMessageBB(QString message);
     void processBinaryMessageBB(QByteArray message);
     void socketDisconnected();
