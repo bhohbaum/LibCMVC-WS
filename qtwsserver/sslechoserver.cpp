@@ -342,6 +342,8 @@ void SslEchoServer::onSslErrors(const QList<QSslError>& errors)
         str.append("\n");
     }
     qDebug() << str;
+    qDebug() << "Trying to ignore the error(s) and go on....";
+    m_pWebSocketBackbone->ignoreSslErrors();
 }
 
 void SslEchoServer::onBackboneConnected()
