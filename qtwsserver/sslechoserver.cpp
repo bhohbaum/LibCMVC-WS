@@ -370,6 +370,13 @@ void SslEchoServer::resetBackboneConnection()
     m_clients.removeAll(m_qtws.m_pWebSocketBackbone);
     delete m_qtws.m_pWebSocketBackbone;
 
+    for (int i = 0; i < m_backbones.count(); i++) {
+        m_backbones.at(i)->close();
+    }
+    for (int i = 0; i < m_clients.count(); i++) {
+        m_clients.at(i)->close();
+    }
+
     m_qtws.m_pWebSocketServer->close();
     m_qtws.m_pWebSocketServerSSL->close();
 
