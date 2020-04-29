@@ -363,10 +363,17 @@ void SslEchoServer::restoreBackboneConnection()
 
 void SslEchoServer::resetBackboneConnection()
 {
-    qDebug() << "Disconnecting old backbone connection....";
+    qDebug() << "Doing a full restart....";
     m_qtws.m_pWebSocketBackbone->disconnect();
     m_qtws.m_pWebSocketBackbone->close();
-    restoreBackboneConnection();
+    m_backbones.removeAll(m_qtws.m_pWebSocketBackbone);
+    m_clients.removeAll(m_qtws.m_pWebSocketBackbone);
+    delete m_qtws.m_pWebSocketBackbone;
+
+    m_qtws.m_pWebSocketServer->close();
+    m_qtws.m_pWebSocketServerSSL->close();
+
+    QCoreApplication::quit();
 }
 
 void SslEchoServer::processTextMessageBB(QString message)

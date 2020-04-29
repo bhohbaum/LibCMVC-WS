@@ -2,6 +2,7 @@
 #define SSLECHOSERVER_H
 
 #include <QtCore/QByteArray>
+#include <QtCore/QCoreApplication>
 #include <QtCore/QList>
 #include <QtCore/QObject>
 #include <QtNetwork/QSslError>

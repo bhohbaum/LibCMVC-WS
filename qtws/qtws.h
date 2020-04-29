@@ -9,6 +9,8 @@
 #include <QtNetwork/QSslError>
 #include <QtWebSockets/QWebSocket>
 #include <QtWebSockets/QWebSocketServer>
+#include <limits.h>
+#include <stdlib.h>
 
 #define GZIP_WINDOWS_BIT 15 + 16 // gzip only decoding
 #define GZIP_OR_ZLIB_WIN_BIT 15 + 32 // auto zlib or gzip decoding
@@ -31,6 +33,7 @@ public slots:
     void sendKeepAlivePing();
     void startKeepAliveTimer();
     void stopKeepAliveTimer();
+    void startBackboneWatchdog();
 
 private:
     QTimer keepaliveTimer;

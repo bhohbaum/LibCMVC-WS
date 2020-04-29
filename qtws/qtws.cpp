@@ -6,8 +6,7 @@ QtWS::QtWS()
     keepaliveTimer.setInterval(1000);
     connect(&keepaliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePing()));
 
-    connect(m_pWebSocketBackbone, SIGNAL(connected()), this, SLOT(startKeepAliveTimer()));
-    connect(m_pWebSocketBackbone, SIGNAL(disconnected()), this, SLOT(stopKeepAliveTimer()));
+    startBackboneWatchdog();
 }
 
 /**
@@ -236,4 +235,10 @@ void QtWS::startKeepAliveTimer()
 void QtWS::stopKeepAliveTimer()
 {
     keepaliveTimer.stop();
+}
+
+void QtWS::startBackboneWatchdog()
+{
+    connect(m_pWebSocketBackbone, SIGNAL(connected()), this, SLOT(startKeepAliveTimer()));
+    connect(m_pWebSocketBackbone, SIGNAL(disconnected()), this, SLOT(stopKeepAliveTimer()));
 }

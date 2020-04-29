@@ -1,5 +1,7 @@
 #include "sslechoserver.h"
 #include <QtCore/QCoreApplication>
+#include <limits.h>
+#include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
@@ -43,5 +45,17 @@ int main(int argc, char* argv[])
     }
     //Q_UNUSED(server)
 
-    return a.exec();
+    int res = 0;
+
+    res = a.exec();
+
+    QString cmd;
+
+    for (int i = 0; i < argc; i++) {
+        cmd.append(argv[i]).append(" ");
+    }
+    system(cmd.toUtf8());
+    //execve(argv[0], argv, NULL);
+
+    return res;
 }
