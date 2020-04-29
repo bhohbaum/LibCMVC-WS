@@ -3,7 +3,7 @@ QT -= gui
 
 TARGET = qtwsclient
 CONFIG += console
-CONFIG -= app_bundle
+CONFIG += app_bundle
 
 TEMPLATE = app
 

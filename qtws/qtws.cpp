@@ -2,59 +2,13 @@
 
 QtWS::QtWS()
 {
+    m_pWebSocketBackbone = new QWebSocket();
+    keepaliveTimer.setInterval(1000);
+    connect(&keepaliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePing()));
+
+    connect(m_pWebSocketBackbone, SIGNAL(connected()), this, SLOT(startKeepAliveTimer()));
+    connect(m_pWebSocketBackbone, SIGNAL(disconnected()), this, SLOT(stopKeepAliveTimer()));
 }
-
-/*
-QByteArray QtWS::gUncompress(const QByteArray& data)
-{
-    if (data.size() <= 4) {
-        qWarning("gUncompress: Input data is truncated");
-        return QByteArray();
-    }
-
-    QByteArray result;
-
-    int ret;
-    z_stream strm;
-    static const int CHUNK_SIZE = 1024;
-    char out[CHUNK_SIZE];
-
-    // allocate inflate state
-strm.zalloc = Z_NULL;
-strm.zfree = Z_NULL;
-strm.opaque = Z_NULL;
-strm.avail_in = data.size();
-strm.next_in = (Bytef*)(data.data());
-
-ret = inflateInit2(&strm, GZIP_OR_ZLIB_WIN_BIT);
-if (ret != Z_OK)
-    return QByteArray();
-
-// run inflate()
-do {
-    strm.avail_out = CHUNK_SIZE;
-    strm.next_out = (Bytef*)(out);
-
-    ret = inflate(&strm, Z_NO_FLUSH);
-    Q_ASSERT(ret != Z_STREAM_ERROR); // state not clobbered
-
-    switch (ret) {
-    case Z_NEED_DICT:
-        ret = Z_DATA_ERROR; // and fall through
-    case Z_DATA_ERROR:
-    case Z_MEM_ERROR:
-        (void)inflateEnd(&strm);
-        return QByteArray();
-    }
-
-    result.append(out, CHUNK_SIZE - strm.avail_out);
-} while (strm.avail_out == 0);
-
-// clean up and return
-inflateEnd(&strm);
-return result;
-}
-*/
 
 /**
  * @brief Compresses the given buffer using the standard GZIP algorithm
@@ -244,4 +198,42 @@ bool QtWS::gzipDecompress(QByteArray input, QByteArray& output)
         return (ret == Z_STREAM_END);
     } else
         return (true);
+}
+
+QString QtWS::secureBackboneUrl(QString url)
+{
+    QUrl u1(url);
+    QString res(QUrl(u1.scheme().append("://").append(u1.host()).append(":").append(
+                         QString::number(u1.port())))
+                    .toString());
+    return res;
+}
+
+void QtWS::onSslErrors(const QList<QSslError>& errors)
+{
+    QString str("SSL error occurred: ");
+    for (int i = 0; i < errors.length(); i++) {
+        str.append(errors.at(i).errorString());
+        str.append("\n");
+    }
+    qDebug() << str;
+    qDebug() << "Trying to ignore the error(s) and go on....";
+
+    m_pWebSocketBackbone->ignoreSslErrors();
+}
+
+void QtWS::sendKeepAlivePing()
+{
+    qDebug() << "PING";
+    m_pWebSocketBackbone->ping();
+}
+
+void QtWS::startKeepAliveTimer()
+{
+    keepaliveTimer.start();
+}
+
+void QtWS::stopKeepAliveTimer()
+{
+    keepaliveTimer.stop();
 }

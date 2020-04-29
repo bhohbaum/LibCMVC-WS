@@ -21,7 +21,7 @@ public:
 
     bool startupComplete = false;
 
-private Q_SLOTS:
+private slots:
     void onNewConnection();
     void onNewSSLConnection();
     void processTextMessage(QString message);
@@ -31,20 +31,21 @@ private Q_SLOTS:
     void processTextMessageBB(QString message);
     void processBinaryMessageBB(QByteArray message);
     void socketDisconnected();
-    void onSslErrors(const QList<QSslError>& errors);
     void onBackboneConnected();
     void onBackboneDisconnected();
     void restoreBackboneConnection();
+    void resetBackboneConnection();
+    void resetBackboneResetTimer();
 
 private:
-    QWebSocketServer *m_pWebSocketServer, *m_pWebSocketServerSSL;
-    QWebSocket* m_pWebSocketBackbone;
-
     QList<QWebSocket*> m_clients;
     QMap<QString, QList<QWebSocket*>> m_channels;
     QList<QWebSocket*> m_backbones;
 
     QString m_sBackbone = "";
+
+    QtWS m_qtws;
+    QTimer bbResetTimer;
 };
 
 #endif //SSLECHOSERVER_H

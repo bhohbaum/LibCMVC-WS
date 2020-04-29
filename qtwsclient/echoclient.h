@@ -7,23 +7,23 @@
 
 class EchoClient : public QObject {
     Q_OBJECT
+
 public:
     explicit EchoClient(const QUrl& url, bool debug = false, bool compression = false, QObject* parent = nullptr);
 
 Q_SIGNALS:
     void closed();
 
-private Q_SLOTS:
+private slots:
     void onConnected();
     void onTextMessageReceived(QString message);
     void onBinaryMessageReceived(QByteArray message);
-    void onSslErrors(const QList<QSslError>& errors);
 
 private:
-    QWebSocket m_webSocket;
     QUrl m_url;
     bool m_debug;
     bool m_compression;
+    QtWS m_qtws;
 };
 
 #endif // ECHOCLIENT_H

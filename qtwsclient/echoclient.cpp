@@ -13,11 +13,12 @@ EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, QObject* p
 {
     if (m_debug)
         qDebug() << "WebSocket server:" << url;
-    connect(&m_webSocket, &QWebSocket::connected, this, &EchoClient::onConnected);
-    connect(&m_webSocket, &QWebSocket::disconnected, this, &EchoClient::closed);
-    connect(&m_webSocket, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), this, &EchoClient::onSslErrors);
+    //m_qtws.m_pWebSocketBackbone = new QWebSocket();
+    connect(m_qtws.m_pWebSocketBackbone, &QWebSocket::connected, this, &EchoClient::onConnected);
+    connect(m_qtws.m_pWebSocketBackbone, &QWebSocket::disconnected, this, &EchoClient::closed);
+    connect(m_qtws.m_pWebSocketBackbone, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), &m_qtws, &QtWS::onSslErrors);
 
-    m_webSocket.open(QUrl(url));
+    m_qtws.m_pWebSocketBackbone->open(QUrl(url));
 }
 //! [constructor]
 
@@ -26,8 +27,8 @@ void EchoClient::onConnected()
 {
     if (m_debug)
         qDebug() << "WebSocket connected";
-    connect(&m_webSocket, &QWebSocket::textMessageReceived, this, &EchoClient::onTextMessageReceived);
-    connect(&m_webSocket, &QWebSocket::binaryMessageReceived, this, &EchoClient::onBinaryMessageReceived);
+    connect(m_qtws.m_pWebSocketBackbone, &QWebSocket::textMessageReceived, this, &EchoClient::onTextMessageReceived);
+    connect(m_qtws.m_pWebSocketBackbone, &QWebSocket::binaryMessageReceived, this, &EchoClient::onBinaryMessageReceived);
     QByteArray content;
 #ifdef Q_OS_WIN32
     _setmode(_fileno(stdin), _O_BINARY);
@@ -47,10 +48,10 @@ void EchoClient::onConnected()
         qDebug() << "Sending message:" << msgComp << text;
     if (m_compression) {
         QByteArray ba;
-        QtWS::gzipCompress(text.toUtf8(), ba, 9);
-        m_webSocket.sendBinaryMessage(ba);
+        m_qtws.gzipCompress(text.toUtf8(), ba, 9);
+        m_qtws.m_pWebSocketBackbone->sendBinaryMessage(ba);
     } else {
-        m_webSocket.sendTextMessage(text);
+        m_qtws.m_pWebSocketBackbone->sendTextMessage(text);
     }
 }
 //! [onConnected]
@@ -60,33 +61,17 @@ void EchoClient::onTextMessageReceived(QString message)
 {
     if (m_debug)
         qDebug() << "Message received:" << message;
-    m_webSocket.close();
+    m_qtws.m_pWebSocketBackbone->close();
 }
 //! [onTextMessageReceived]
 
 void EchoClient::onBinaryMessageReceived(QByteArray message)
 {
     QByteArray ba;
-    if (QtWS::gzipDecompress(message, ba)) {
+    if (m_qtws.gzipDecompress(message, ba)) {
         message = ba;
     }
     if (m_debug)
         qDebug() << "Message received:" << message;
-    m_webSocket.close();
-}
-
-void EchoClient::onSslErrors(const QList<QSslError>& errors)
-{
-    //Q_UNUSED(errors);
-
-    foreach (QSslError e, errors) {
-        qDebug() << "SSL error:" << e.errorString();
-    }
-    // WARNING: Never ignore SSL errors in production code.
-    // The proper way to handle self-signed certificates is to add a custom root
-    // to the CA store.
-
-    qDebug() << "Trying to ignore the error(s) and go on....";
-
-    m_webSocket.ignoreSslErrors();
+    m_qtws.m_pWebSocketBackbone->close();
 }
