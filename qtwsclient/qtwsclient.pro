@@ -4,6 +4,7 @@ QT -= gui
 TARGET = qtwsclient
 CONFIG += console
 CONFIG += app_bundle
+#CONFIG += static
 
 TEMPLATE = app
 
