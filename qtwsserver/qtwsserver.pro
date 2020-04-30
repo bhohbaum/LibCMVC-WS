@@ -1,4 +1,5 @@
 QT = websockets
+QT -= gui
 
 TARGET = qtwsserver
 CONFIG += console
