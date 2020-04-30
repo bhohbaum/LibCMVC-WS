@@ -7,7 +7,10 @@ SUBDIRS = \
 
 CONFIG += ordered
 
-# do a static build if requested. otherwise this flag is ignored.
-CONFIG += static
-
-
+# do a static build if we are parsed by a statically built qmake
+contains(CONFIG, "shared"): {
+	message("Qt linking: dynamic")
+} else {
+	message("Qt linking: static")
+	CONFIG += static
+}

@@ -3,7 +3,6 @@ QT = websockets
 TARGET = qtwsserver
 CONFIG += console
 CONFIG += app_bundle
-#CONFIG += static
 
 TEMPLATE = app
 
