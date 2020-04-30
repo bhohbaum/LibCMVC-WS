@@ -146,7 +146,9 @@ void QtWS::onSslErrors(const QList<QSslError>& errors)
 void QtWS::sendKeepAlivePing()
 {
     qDebug() << "PING";
-    m_pWebSocketBackbone->ping();
+    if (m_pWebSocketBackbone->state() == QAbstractSocket::SocketState::ConnectedState) {
+        m_pWebSocketBackbone->ping();
+    }
 }
 
 void QtWS::startKeepAliveTimer()
