@@ -23,9 +23,13 @@ HEADERS += \
 	qtws.h
 
 TRANSLATIONS += \
-	qtws_en_001.ts
+	qtws_de_001.ts
 
+DISTFILES += \
+	qtws_de_001.qm
 
+RESOURCES += \
+	qtws.qrc
 
 # Default rules for deployment.
 #unix {
@@ -35,4 +39,7 @@ TRANSLATIONS += \
 
 target.path = /usr/local/lib
 INSTALLS += target
+
+system("lupdate qtws.pro -recursive -tr-function-alias tr=trans")
+system("lrelease qtws.pro")
 

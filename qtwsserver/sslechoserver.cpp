@@ -233,21 +233,6 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
 void SslEchoServer::processBinaryMessage(QByteArray message)
 {
     __processBinaryMessage(message, "");
-    /*
-    QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
-    int ctr = 0;
-    if (pClient) {
-        for (int i = 0; i < m_clients.count(); i++) {
-            if (m_clients[i]->request().url().path() == pClient->request().url().path()) { //  && pClient != m_clients[i]
-                m_clients[i]->sendBinaryMessage(message);
-                ctr++;
-            }
-        }
-    }
-    qDebug() << "Distributing event to" << ctr << "clients. Channel:" << pClient->request().url().path()
-             << "Message:" << message;
-    qDebug() << "Total number of clients:" << m_clients.count();
-*/
 }
 
 void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)

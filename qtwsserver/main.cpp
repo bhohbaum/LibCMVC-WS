@@ -1,17 +1,31 @@
 #include "sslechoserver.h"
+#include <QFile>
+#include <QTranslator>
 #include <QtCore/QCoreApplication>
 #include <limits.h>
 #include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
+    Q_INIT_RESOURCE(qtws);
+    Q_INIT_RESOURCE(securesocketclient);
+
     QCoreApplication a(argc, argv);
     unsigned short p = 0;
     unsigned short ps = 0;
     bool encrypted = false;
-    QString certificate("qrc:/localhost.cert");
-    QString key("qrc:/localhost.key");
+    QString certificate(":/localhost.cert");
+    QString key(":/localhost.key");
     QString bbUrl("");
+
+    QString trde;
+    trde.append(":/qtws_").append(QLocale::system().name().split("_").at(0)).append("_001.qm");
+    qDebug() << trde;
+
+    QTranslator qtTranslator;
+    qtTranslator.load(QLocale::system(), QStringLiteral("qtbase_"));
+    qtTranslator.load(trde);
+    a.installTranslator(&qtTranslator);
 
     if (argc == 2) {
         QString port(argv[1]);

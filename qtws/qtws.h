@@ -9,6 +9,7 @@
 #include <QtNetwork/QSslError>
 #include <QtWebSockets/QWebSocket>
 #include <QtWebSockets/QWebSocketServer>
+#include <iostream>
 #include <limits.h>
 #include <stdlib.h>
 
@@ -34,6 +35,8 @@ public slots:
     void startKeepAliveTimer();
     void stopKeepAliveTimer();
     void startBackboneWatchdog();
+    QString trans(QString text);
+    void log(QString msg);
 
 private:
     QTimer keepaliveTimer;

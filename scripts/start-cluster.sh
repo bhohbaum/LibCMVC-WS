@@ -2,9 +2,9 @@
 
 # qtwsserver -p 8888 -k /home/botho/git/LibCMVC-WS/qtwsserver/localhost.key  -c /home/botho/git/LibCMVC-WS/qtwsserver/localhost.cert -s 8889 &
 
-for A in `seq 0 3`
+for A in `seq 0 1`
 do
-	for B in `seq 0 9`
+	for B in `seq 0 5`
 	do
 		for C in `seq 0 9`
 		do

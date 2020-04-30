@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+	<qresource prefix="/">
+		<file>qtws_de_001.ts</file>
+		<file>qtws_de_001.qm</file>
+	</qresource>
+</RCC>

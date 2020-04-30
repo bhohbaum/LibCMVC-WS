@@ -14,3 +14,4 @@ contains(CONFIG, "shared"): {
 	message("Qt linking: static")
 	CONFIG += static
 }
+
