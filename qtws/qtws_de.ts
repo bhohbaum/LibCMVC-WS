@@ -4,16 +4,16 @@
 <context>
     <name>QtWS</name>
     <message>
-        <source>SSL error occurred: </source>
-        <translation>Ein SSL-Fehler ist aufgetreten: </translation>
-    </message>
-    <message>
         <source>Trying to ignore the error(s) and go on....</source>
         <translation>Versuche den/die Fehler zu ignorieren und weiter zu machen...</translation>
     </message>
     <message>
-        <source>PING</source>
-        <translation>DEUTSCHER PING</translation>
+        <source>PING </source>
+        <translation>PING </translation>
+    </message>
+    <message>
+        <source>One or more SSL errors occurred:</source>
+        <translation>Ein oder mehr SSL-Fehler sind aufgetreten:</translation>
     </message>
 </context>
 </TS>

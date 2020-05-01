@@ -20,7 +20,7 @@ EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, QObject* p
     if (m_debug) {
         QString msg(tr("WebSocket server: "));
         msg.append(url.toString());
-        QtWS::getInstance()->log(msg);
+        LOG(msg);
     }
     connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::connected, this, &EchoClient::onConnected);
     connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::disconnected, this, &EchoClient::closed);
@@ -35,7 +35,7 @@ EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, QObject* p
 void EchoClient::onConnected()
 {
     if (m_debug) {
-        QtWS::getInstance()->log(tr("WebSocket connected"));
+        LOG(tr("WebSocket connected"));
     }
     connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::textMessageReceived, this, &EchoClient::onTextMessageReceived);
     connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::binaryMessageReceived, this, &EchoClient::onBinaryMessageReceived);
@@ -57,7 +57,7 @@ void EchoClient::onConnected()
     if (m_debug) {
         QString msg(tr("Sending message"));
         msg.append(msgComp).append(": ").append(text);
-        QtWS::getInstance()->log(msg);
+        LOG(msg);
     }
     if (m_compression) {
         QByteArray ba;
@@ -77,7 +77,7 @@ void EchoClient::onTextMessageReceived(QString message)
     if (m_debug) {
         QString msg(tr("Message received: "));
         msg.append(message);
-        QtWS::getInstance()->log(msg);
+        LOG(msg);
     }
     QtWS::getInstance()->m_pWebSocketBackbone->close();
 }
@@ -95,7 +95,7 @@ void EchoClient::onBinaryMessageReceived(QByteArray message)
     if (m_debug) {
         QString msg(tr("Message received: "));
         msg.append(message);
-        QtWS::getInstance()->log(msg);
+        LOG(msg);
     }
     QtWS::getInstance()->m_pWebSocketBackbone->close();
 }

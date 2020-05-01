@@ -15,6 +15,8 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#define LOG(msg) QtWS::getInstance()->log(msg);
+
 #define GZIP_WINDOWS_BIT 15 + 16 // gzip only decoding
 #define GZIP_OR_ZLIB_WIN_BIT 15 + 32 // auto zlib or gzip decoding
 #define GZIP_CHUNK_SIZE 32 * 1024
@@ -41,7 +43,6 @@ public slots:
     void startKeepAliveTimer();
     void stopKeepAliveTimer();
     void startBackboneWatchdog();
-    QString trans(QString text);
     void log(QString msg);
     void loadTranslation(QCoreApplication* app);
     QString wsInfo(QString msg, QWebSocket* pSocket);

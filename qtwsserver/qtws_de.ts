@@ -60,10 +60,6 @@
         <translation>Mache einen kompletten Neustart....</translation>
     </message>
     <message>
-        <source>PONG</source>
-        <translation>DEUTSCHER PONG</translation>
-    </message>
-    <message>
         <source>Distributing event to </source>
         <translation>Verteile Ereignis an </translation>
     </message>
@@ -90,6 +86,10 @@
     <message>
         <source>New SSL connection...</source>
         <translation>Neue SSL Verbindung...</translation>
+    </message>
+    <message>
+        <source>PONG </source>
+        <translation>PONG </translation>
     </message>
 </context>
 </TS>

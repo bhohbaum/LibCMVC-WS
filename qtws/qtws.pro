@@ -44,5 +44,6 @@ RESOURCES += \
 target.path = /usr/local/lib
 INSTALLS += target
 
-system("lupdate qtws.pro -recursive -tr-function-alias tr=trans")
+#system("lupdate qtws.pro -recursive -tr-function-alias tr=trans")
+system("lupdate qtws.pro -recursive")
 system("lrelease qtws.pro")

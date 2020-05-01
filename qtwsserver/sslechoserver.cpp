@@ -34,11 +34,11 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
         QFile certFile(cert);
         QFile keyFile(key);
         if (!certFile.open(QIODevice::ReadOnly)) {
-            QtWS::getInstance()->log(tr("Error opening SSL certificate."));
+            LOG(tr("Error opening SSL certificate."));
             return;
         }
         if (!keyFile.open(QIODevice::ReadOnly)) {
-            QtWS::getInstance()->log(tr("Error opening SSL key."));
+            LOG(tr("Error opening SSL key."));
             return;
         }
         QSslCertificate certificate(&certFile, QSsl::Pem);
@@ -52,7 +52,7 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
         QtWS::getInstance()->m_pWebSocketServerSSL->setSslConfiguration(sslConfiguration);
         if (sslPort != 0) {
             if (QtWS::getInstance()->m_pWebSocketServerSSL->listen(QHostAddress::Any, sslPort)) {
-                QtWS::getInstance()->log(tr("WS PubSub SSL Server listening on port ").append(QString::number(sslPort)));
+                LOG(tr("WS PubSub SSL Server listening on port ").append(QString::number(sslPort)));
                 connect(QtWS::getInstance()->m_pWebSocketServerSSL,
                     &QWebSocketServer::newConnection,
                     this,
@@ -62,20 +62,20 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
                     QtWS::getInstance(),
                     &QtWS::onSslErrors);
             } else {
-                QtWS::getInstance()->log(tr("Error binding SSL socket!!"));
+                LOG(tr("Error binding SSL socket!!"));
                 return;
             }
         }
     }
     if (port != 0) {
         if (QtWS::getInstance()->m_pWebSocketServer->listen(QHostAddress::Any, port)) {
-            QtWS::getInstance()->log(tr("WS PubSub Server listening on port ").append(QString::number(port)));
+            LOG(tr("WS PubSub Server listening on port ").append(QString::number(port)));
             connect(QtWS::getInstance()->m_pWebSocketServer,
                 &QWebSocketServer::newConnection,
                 this,
                 &SslEchoServer::onNewConnection);
         } else {
-            QtWS::getInstance()->log(tr("Error binding PLAIN socket!!"));
+            LOG(tr("Error binding PLAIN socket!!"));
             return;
         }
     }
@@ -131,11 +131,11 @@ SslEchoServer::~SslEchoServer()
  */
 void SslEchoServer::onNewConnection()
 {
-    QtWS::getInstance()->log(tr("New PLAIN connection..."));
+    LOG(tr("New PLAIN connection..."));
     QWebSocket* pSocket;
     pSocket = QtWS::getInstance()->m_pWebSocketServer->nextPendingConnection();
     while (pSocket != nullptr) {
-        QtWS::getInstance()->log(QtWS::getInstance()->wsInfo(tr("PLAIN Client connected: "), pSocket));
+        LOG(QtWS::getInstance()->wsInfo(tr("PLAIN Client connected: "), pSocket));
         connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &SslEchoServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
@@ -150,11 +150,11 @@ void SslEchoServer::onNewConnection()
  */
 void SslEchoServer::onNewSSLConnection()
 {
-    QtWS::getInstance()->log(tr("New SSL connection..."));
+    LOG(tr("New SSL connection..."));
     QWebSocket* pSocket;
     pSocket = QtWS::getInstance()->m_pWebSocketServerSSL->nextPendingConnection();
     while (pSocket != nullptr) {
-        QtWS::getInstance()->log(QtWS::getInstance()->wsInfo(tr("SSL Client connected: "), pSocket));
+        LOG(QtWS::getInstance()->wsInfo(tr("SSL Client connected: "), pSocket));
         connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
         connect(pSocket,
             &QWebSocket::binaryMessageReceived,
@@ -206,7 +206,7 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             m_backbones << pClient;
             pClient->request().url().setPath("/");
             pClient->requestUrl().setPath("/");
-            QtWS::getInstance()->log(QtWS::getInstance()->wsInfo(
+            LOG(QtWS::getInstance()->wsInfo(
                 tr("Client identified as another server, moving connection to backbone pool: "),
                 pClient));
         }
@@ -238,14 +238,14 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             .append(channel)
             .append(tr(" Message: "))
             .append(message);
-        QtWS::getInstance()->log(msg);
+        LOG(msg);
     }
     QString msg2;
     msg2.append(tr("Total number of clients: "))
         .append(QString::number(m_clients.count()))
         .append(tr(" Connections to other servers: "))
         .append(QString::number(m_backbones.count()));
-    QtWS::getInstance()->log(msg2);
+    LOG(msg2);
 }
 
 /**
@@ -295,7 +295,7 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
             m_clients.removeAll(pClient);
             m_backbones.removeAll(pClient);
             m_backbones << pClient;
-            QtWS::getInstance()->log(QtWS::getInstance()->wsInfo(
+            LOG(QtWS::getInstance()->wsInfo(
                 tr("Client identified as another server, moving connection to backbone pool: "),
                 pClient));
         }
@@ -324,14 +324,14 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
             .append(channel)
             .append(tr(" Message: "))
             .append(message);
-        QtWS::getInstance()->log(msg);
+        LOG(msg);
     }
     QString msg2;
     msg2.append(tr("Total number of clients: "))
         .append(QString::number(m_clients.count()))
         .append(tr(" Connections to other servers: "))
         .append(QString::number(m_backbones.count()));
-    QtWS::getInstance()->log(msg2);
+    LOG(msg2);
 }
 
 /**
@@ -340,7 +340,7 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
 void SslEchoServer::socketDisconnected()
 {
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
-    QtWS::getInstance()->log(QtWS::getInstance()->wsInfo(tr("Client disconnected: "), pClient));
+    LOG(QtWS::getInstance()->wsInfo(tr("Client disconnected: "), pClient));
     if (pClient) {
         m_clients.removeAll(pClient);
         m_backbones.removeAll(pClient);
@@ -361,7 +361,7 @@ void SslEchoServer::onBackboneConnected()
  */
 void SslEchoServer::onBackboneDisconnected()
 {
-    QtWS::getInstance()->log(tr("Backbone disconnected. Restoring connection...."));
+    LOG(tr("Backbone disconnected. Restoring connection...."));
     bbResetTimer.stop();
     m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
     QTimer* timer = new QTimer(this);
@@ -373,7 +373,7 @@ void SslEchoServer::onBackboneDisconnected()
  */
 void SslEchoServer::restoreBackboneConnection()
 {
-    QtWS::getInstance()->log(tr("Opening new backbone connection...."));
+    LOG(tr("Opening new backbone connection...."));
     QtWS::getInstance()->m_pWebSocketBackbone->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone));
     m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
     m_backbones << QtWS::getInstance()->m_pWebSocketBackbone;
@@ -385,7 +385,7 @@ void SslEchoServer::restoreBackboneConnection()
  */
 void SslEchoServer::resetBackboneConnection()
 {
-    QtWS::getInstance()->log(tr("Doing a full restart...."));
+    LOG(tr("Doing a full restart...."));
     QtWS::getInstance()->m_pWebSocketBackbone->disconnect();
     QtWS::getInstance()->m_pWebSocketBackbone->close();
     m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
@@ -442,7 +442,8 @@ void SslEchoServer::processBinaryMessageBB(QByteArray message)
  */
 void SslEchoServer::resetBackboneResetTimer()
 {
-    QtWS::getInstance()->log(tr("PONG"));
+    QWebSocket* pSocket = qobject_cast<QWebSocket*>(sender());
+    LOG(QtWS::getInstance()->wsInfo(tr("PONG "), pSocket));
     bbResetTimer.stop();
     bbResetTimer.start();
 }

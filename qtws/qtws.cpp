@@ -168,13 +168,16 @@ QString QtWS::secureBackboneUrl(QString url)
  */
 void QtWS::onSslErrors(const QList<QSslError>& errors)
 {
-    QString str(trans("SSL error occurred: "));
+    QString str(tr("One or more SSL errors occurred:"));
+    str.append("\n");
     for (int i = 0; i < errors.length(); i++) {
+        str.append("    ");
+        str.append(QString::number(i + 1)).append(") ");
         str.append(errors.at(i).errorString());
         str.append("\n");
     }
-    log(str);
-    log(trans("Trying to ignore the error(s) and go on...."));
+    LOG(str);
+    LOG(tr("Trying to ignore the error(s) and go on...."));
 
     m_pWebSocketBackbone->ignoreSslErrors();
 }
@@ -184,7 +187,7 @@ void QtWS::onSslErrors(const QList<QSslError>& errors)
  */
 void QtWS::sendKeepAlivePing()
 {
-    log(trans("PING"));
+    LOG(wsInfo(tr("PING "), m_pWebSocketBackbone));
     if (m_pWebSocketBackbone->state() == QAbstractSocket::SocketState::ConnectedState) {
         m_pWebSocketBackbone->ping();
     }
@@ -213,17 +216,6 @@ void QtWS::startBackboneWatchdog()
 {
     connect(m_pWebSocketBackbone, SIGNAL(connected()), this, SLOT(startKeepAliveTimer()));
     connect(m_pWebSocketBackbone, SIGNAL(disconnected()), this, SLOT(stopKeepAliveTimer()));
-}
-
-/**
- * @brief QtWS::trans
- * @param text
- * @return
- */
-QString QtWS::trans(QString text)
-{
-    QString trans = tr(text.toUtf8());
-    return trans;
 }
 
 /**
