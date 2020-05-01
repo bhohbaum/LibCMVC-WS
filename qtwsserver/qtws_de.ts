@@ -85,7 +85,7 @@
     </message>
     <message>
         <source> Connections to other servers: </source>
-        <translation> Verbindungen zu anderen Servern: </translation>
+        <translation> Verbindungen zu anderen Server: </translation>
     </message>
 </context>
 </TS>

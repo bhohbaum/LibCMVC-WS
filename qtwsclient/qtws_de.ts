@@ -33,12 +33,12 @@
 <context>
     <name>main</name>
     <message>
-        <location filename="main.cpp" line="25"/>
+        <location filename="main.cpp" line="23"/>
         <source>Debug output [default: off].</source>
         <translation>Debug-Ausgabe [Ohne Angabe: aus].</translation>
     </message>
     <message>
-        <location filename="main.cpp" line="29"/>
+        <location filename="main.cpp" line="27"/>
         <source>Compress data for transmission [default: raw data].</source>
         <translation>Daten zur Übertragung komprimieren [Ohne Angabe: Rohdaten werden gesendet].</translation>
     </message>

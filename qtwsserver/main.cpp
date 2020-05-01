@@ -7,8 +7,6 @@
 
 int main(int argc, char* argv[])
 {
-    Q_INIT_RESOURCE(qtws);
-
     QCoreApplication a(argc, argv);
     unsigned short p = 0;
     unsigned short ps = 0;

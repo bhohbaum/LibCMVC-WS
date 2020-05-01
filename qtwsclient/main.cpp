@@ -10,8 +10,6 @@ void quit_app()
 
 int main(int argc, char* argv[])
 {
-    Q_INIT_RESOURCE(qtws);
-
     QCoreApplication a(argc, argv);
 
     QtWS::getInstance()->loadTranslation(&a);
