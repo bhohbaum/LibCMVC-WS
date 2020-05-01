@@ -10,6 +10,16 @@
 
 QT_USE_NAMESPACE
 
+/**
+ * @brief SslEchoServer::SslEchoServer
+ * @param port
+ * @param sslPort
+ * @param parent
+ * @param encrypted
+ * @param cert
+ * @param key
+ * @param bbUrl
+ */
 SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, bool encrypted, QString cert, QString key, QString bbUrl)
     : QObject(parent)
 {
@@ -38,7 +48,6 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
         sslConfiguration.setPeerVerifyMode(QSslSocket::VerifyNone);
         sslConfiguration.setLocalCertificate(certificate);
         sslConfiguration.setPrivateKey(sslKey);
-        //sslConfiguration.setProtocol(QSsl::TlsV1SslV3);
         sslConfiguration.setProtocol(QSsl::SecureProtocols);
         QtWS::getInstance()->m_pWebSocketServerSSL->setSslConfiguration(sslConfiguration);
         if (sslPort != 0) {
@@ -72,7 +81,6 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
     }
     if (bbUrl != "") {
         m_sBackbone = bbUrl;
-        //QtWS::getInstance()->m_pWebSocketBackbone = new QWebSocket();
         connect(QtWS::getInstance()->m_pWebSocketBackbone,
             &QWebSocket::connected,
             this,
@@ -85,7 +93,6 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
             QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),
             QtWS::getInstance(),
             &QtWS::onSslErrors);
-        //m_pWebSocketBackbone->open(m_sBackbone);
         QtWS::getInstance()->m_pWebSocketBackbone->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone));
         connect(QtWS::getInstance()->m_pWebSocketBackbone,
             &QWebSocket::textMessageReceived,
@@ -108,6 +115,9 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
     startupComplete = true;
 }
 
+/**
+ * @brief SslEchoServer::~SslEchoServer
+ */
 SslEchoServer::~SslEchoServer()
 {
     QtWS::getInstance()->m_pWebSocketServer->close();
@@ -116,6 +126,9 @@ SslEchoServer::~SslEchoServer()
     qDeleteAll(m_backbones.begin(), m_backbones.end());
 }
 
+/**
+ * @brief SslEchoServer::onNewConnection
+ */
 void SslEchoServer::onNewConnection()
 {
     QtWS::getInstance()->log(tr("New PLAIN connection..."));
@@ -128,11 +141,13 @@ void SslEchoServer::onNewConnection()
         connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
         m_clients.removeAll(pSocket);
         m_clients << pSocket;
-        //m_channels[pSocket->request().url().path()].append(pSocket);
         pSocket = QtWS::getInstance()->m_pWebSocketServer->nextPendingConnection();
     }
 }
 
+/**
+ * @brief SslEchoServer::onNewSSLConnection
+ */
 void SslEchoServer::onNewSSLConnection()
 {
     qDebug() << "New SSL connection...";
@@ -152,16 +167,24 @@ void SslEchoServer::onNewSSLConnection()
             &QtWS::onSslErrors);
         m_clients.removeAll(pSocket);
         m_clients << pSocket;
-        //m_channels[pSocket->request().url().path()].append(pSocket);
         pSocket = QtWS::getInstance()->m_pWebSocketServerSSL->nextPendingConnection();
     }
 }
 
+/**
+ * @brief SslEchoServer::processTextMessage
+ * @param message
+ */
 void SslEchoServer::processTextMessage(QString message)
 {
     __processTextMessage(message, "");
 }
 
+/**
+ * @brief SslEchoServer::__processTextMessage
+ * @param message
+ * @param channel
+ */
 void SslEchoServer::__processTextMessage(QString message, QString channel)
 {
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
@@ -190,18 +213,6 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
     } else {
         int ctr = 0, ctr2 = 0;
         if (pClient) {
-            /*
-            QList<QWebSocket*>::iterator iter = m_channels.find(pClient->request().url().path())->begin();
-            const QList<QWebSocket*>::iterator end = m_channels.find(pClient->request().url().path())->end();
-            for (; iter != end; ++iter) {
-                (*iter)->sendTextMessage(message);
-            }
-
-            for (int i = 0; i < m_channels.find(pClient->request().url().path())->count(); i++) {
-                QWebSocket* pSocket = m_channels.find(pClient->request().url().path())->at(i);
-                pSocket->sendTextMessage(message);
-            }
-*/
             for (int i = 0; i < m_clients.count(); i++) {
                 if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
                     m_clients[i]->sendTextMessage(message);
@@ -237,11 +248,20 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
     QtWS::getInstance()->log(msg2);
 }
 
+/**
+ * @brief SslEchoServer::processBinaryMessage
+ * @param message
+ */
 void SslEchoServer::processBinaryMessage(QByteArray message)
 {
     __processBinaryMessage(message, "");
 }
 
+/**
+ * @brief SslEchoServer::__processBinaryMessage
+ * @param message
+ * @param channel
+ */
 void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
 {
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
@@ -282,18 +302,6 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     } else {
         int ctr = 0, ctr2 = 0;
         if (pClient) {
-            /*
-            QList<QWebSocket*>::iterator iter = m_channels.find(pClient->request().url().path())->begin();
-            const QList<QWebSocket*>::iterator end = m_channels.find(pClient->request().url().path())->end();
-            for (; iter != end; ++iter) {
-                (*iter)->sendTextMessage(message);
-            }
-
-            for (int i = 0; i < m_channels.find(pClient->request().url().path())->count(); i++) {
-                QWebSocket* pSocket = m_channels.find(pClient->request().url().path())->at(i);
-                pSocket->sendTextMessage(message);
-            }
-            */
             for (int i = 0; i < m_clients.count(); i++) {
                 if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
                     m_clients[i]->sendBinaryMessage(cMessage);
@@ -326,23 +334,31 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     QtWS::getInstance()->log(msg2);
 }
 
+/**
+ * @brief SslEchoServer::socketDisconnected
+ */
 void SslEchoServer::socketDisconnected()
 {
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     QtWS::getInstance()->log(QtWS::getInstance()->wsInfo(tr("Client disconnected: "), pClient));
     if (pClient) {
         m_clients.removeAll(pClient);
-        //m_channels.find(pClient->request().url().path())->removeAll(pClient);
         m_backbones.removeAll(pClient);
         pClient->deleteLater();
     }
 }
 
+/**
+ * @brief SslEchoServer::onBackboneConnected
+ */
 void SslEchoServer::onBackboneConnected()
 {
     QtWS::getInstance()->m_pWebSocketBackbone->sendTextMessage(BACKBONE_REGISTRATION_MSG);
 }
 
+/**
+ * @brief SslEchoServer::onBackboneDisconnected
+ */
 void SslEchoServer::onBackboneDisconnected()
 {
     QtWS::getInstance()->log(tr("Backbone disconnected. Restoring connection...."));
@@ -352,16 +368,21 @@ void SslEchoServer::onBackboneDisconnected()
     timer->singleShot(1000, this, SLOT(restoreBackboneConnection()));
 }
 
+/**
+ * @brief SslEchoServer::restoreBackboneConnection
+ */
 void SslEchoServer::restoreBackboneConnection()
 {
     QtWS::getInstance()->log(tr("Opening new backbone connection...."));
-    //m_pWebSocketBackbone->open(m_sBackbone);
     QtWS::getInstance()->m_pWebSocketBackbone->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone));
     m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
     m_backbones << QtWS::getInstance()->m_pWebSocketBackbone;
     bbResetTimer.start();
 }
 
+/**
+ * @brief SslEchoServer::resetBackboneConnection
+ */
 void SslEchoServer::resetBackboneConnection()
 {
     QtWS::getInstance()->log(tr("Doing a full restart...."));
@@ -384,6 +405,10 @@ void SslEchoServer::resetBackboneConnection()
     QCoreApplication::quit();
 }
 
+/**
+ * @brief SslEchoServer::processTextMessageBB
+ * @param message
+ */
 void SslEchoServer::processTextMessageBB(QString message)
 {
     QStringList arr = message.split("\n");
@@ -393,6 +418,10 @@ void SslEchoServer::processTextMessageBB(QString message)
     __processTextMessage(message, channel);
 }
 
+/**
+ * @brief SslEchoServer::processBinaryMessageBB
+ * @param message
+ */
 void SslEchoServer::processBinaryMessageBB(QByteArray message)
 {
     QByteArray ba;
@@ -408,6 +437,9 @@ void SslEchoServer::processBinaryMessageBB(QByteArray message)
     __processBinaryMessage(msg.toUtf8(), channel);
 }
 
+/**
+ * @brief SslEchoServer::resetBackboneResetTimer
+ */
 void SslEchoServer::resetBackboneResetTimer()
 {
     QtWS::getInstance()->log(tr("PONG"));

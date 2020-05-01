@@ -4,7 +4,13 @@
 
 QT_USE_NAMESPACE
 
-//! [constructor]
+/**
+ * @brief EchoClient::EchoClient
+ * @param url
+ * @param debug
+ * @param compression
+ * @param parent
+ */
 EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, QObject* parent)
     : QObject(parent)
     , m_url(url)
@@ -16,16 +22,16 @@ EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, QObject* p
         msg.append(url.toString());
         QtWS::getInstance()->log(msg);
     }
-    //QtWS::getInstance()->m_pWebSocketBackbone = new QWebSocket();
     connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::connected, this, &EchoClient::onConnected);
     connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::disconnected, this, &EchoClient::closed);
     connect(QtWS::getInstance()->m_pWebSocketBackbone, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), QtWS::getInstance(), &QtWS::onSslErrors);
 
     QtWS::getInstance()->m_pWebSocketBackbone->open(QUrl(url));
 }
-//! [constructor]
 
-//! [onConnected]
+/**
+ * @brief EchoClient::onConnected
+ */
 void EchoClient::onConnected()
 {
     if (m_debug) {
@@ -61,9 +67,11 @@ void EchoClient::onConnected()
         QtWS::getInstance()->m_pWebSocketBackbone->sendTextMessage(text);
     }
 }
-//! [onConnected]
 
-//! [onTextMessageReceived]
+/**
+ * @brief EchoClient::onTextMessageReceived
+ * @param message
+ */
 void EchoClient::onTextMessageReceived(QString message)
 {
     if (m_debug) {
@@ -73,8 +81,11 @@ void EchoClient::onTextMessageReceived(QString message)
     }
     QtWS::getInstance()->m_pWebSocketBackbone->close();
 }
-//! [onTextMessageReceived]
 
+/**
+ * @brief EchoClient::onBinaryMessageReceived
+ * @param message
+ */
 void EchoClient::onBinaryMessageReceived(QByteArray message)
 {
     QByteArray ba;

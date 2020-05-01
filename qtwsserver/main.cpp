@@ -47,7 +47,6 @@ int main(int argc, char* argv[])
     if (!server.startupComplete) {
         return 1;
     }
-    //Q_UNUSED(server)
 
     int res = 0;
 
@@ -59,7 +58,6 @@ int main(int argc, char* argv[])
         cmd.append(argv[i]).append(" ");
     }
     system(cmd.toUtf8());
-    //execve(argv[0], argv, NULL);
 
     return res;
 }

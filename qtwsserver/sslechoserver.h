@@ -45,7 +45,6 @@ private:
 
     QString m_sBackbone = "";
 
-    //QtWS m_qtws;
     QTimer bbResetTimer;
 };
 

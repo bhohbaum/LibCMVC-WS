@@ -2,6 +2,9 @@
 
 QtWS* QtWS::instance = nullptr;
 
+/**
+ * @brief QtWS::QtWS
+ */
 QtWS::QtWS()
 {
     Q_INIT_RESOURCE(qtws);
@@ -13,6 +16,18 @@ QtWS::QtWS()
     startBackboneWatchdog();
 }
 
+/**
+ * @brief QtWS::~QtWS
+ */
+QtWS::~QtWS()
+{
+    Q_CLEANUP_RESOURCE(qtws);
+}
+
+/**
+ * @brief QtWS::getInstance
+ * @return
+ */
 QtWS* QtWS::getInstance()
 {
     if (QtWS::instance == nullptr)
@@ -113,6 +128,7 @@ bool QtWS::gzipDecompress(QByteArray input, QByteArray& output)
                 switch (ret) {
                 case Z_NEED_DICT:
                     ret = Z_DATA_ERROR;
+                    break;
                 case Z_DATA_ERROR:
                 case Z_MEM_ERROR:
                 case Z_STREAM_ERROR:
@@ -132,6 +148,11 @@ bool QtWS::gzipDecompress(QByteArray input, QByteArray& output)
     }
 }
 
+/**
+ * @brief QtWS::secureBackboneUrl
+ * @param url
+ * @return
+ */
 QString QtWS::secureBackboneUrl(QString url)
 {
     QUrl u1(url);
@@ -141,6 +162,10 @@ QString QtWS::secureBackboneUrl(QString url)
     return res;
 }
 
+/**
+ * @brief QtWS::onSslErrors
+ * @param errors
+ */
 void QtWS::onSslErrors(const QList<QSslError>& errors)
 {
     QString str(trans("SSL error occurred: "));
@@ -154,6 +179,9 @@ void QtWS::onSslErrors(const QList<QSslError>& errors)
     m_pWebSocketBackbone->ignoreSslErrors();
 }
 
+/**
+ * @brief QtWS::sendKeepAlivePing
+ */
 void QtWS::sendKeepAlivePing()
 {
     log(trans("PING"));
@@ -162,33 +190,55 @@ void QtWS::sendKeepAlivePing()
     }
 }
 
+/**
+ * @brief QtWS::startKeepAliveTimer
+ */
 void QtWS::startKeepAliveTimer()
 {
     keepaliveTimer.start();
 }
 
+/**
+ * @brief QtWS::stopKeepAliveTimer
+ */
 void QtWS::stopKeepAliveTimer()
 {
     keepaliveTimer.stop();
 }
 
+/**
+ * @brief QtWS::startBackboneWatchdog
+ */
 void QtWS::startBackboneWatchdog()
 {
     connect(m_pWebSocketBackbone, SIGNAL(connected()), this, SLOT(startKeepAliveTimer()));
     connect(m_pWebSocketBackbone, SIGNAL(disconnected()), this, SLOT(stopKeepAliveTimer()));
 }
 
+/**
+ * @brief QtWS::trans
+ * @param text
+ * @return
+ */
 QString QtWS::trans(QString text)
 {
     QString trans = tr(text.toUtf8());
     return trans;
 }
 
+/**
+ * @brief QtWS::log
+ * @param msg
+ */
 void QtWS::log(QString msg)
 {
     std::cout << msg.toUtf8().constData() << std::endl;
 }
 
+/**
+ * @brief QtWS::loadTranslation
+ * @param app
+ */
 void QtWS::loadTranslation(QCoreApplication* app)
 {
     QString trFileLib, trFileClient, trFileServer;
@@ -211,6 +261,12 @@ void QtWS::loadTranslation(QCoreApplication* app)
     app->installTranslator(&qtTranslatorServer);
 }
 
+/**
+ * @brief QtWS::wsInfo
+ * @param msg
+ * @param pSocket
+ * @return
+ */
 QString QtWS::wsInfo(QString msg, QWebSocket* pSocket)
 {
     QString message;

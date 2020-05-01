@@ -23,6 +23,8 @@ class QtWS : public QObject {
     Q_OBJECT
 
 public:
+    ~QtWS();
+
     static QtWS* getInstance();
 
     static QtWS* instance;

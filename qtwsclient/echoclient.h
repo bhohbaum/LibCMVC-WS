@@ -23,7 +23,6 @@ private:
     QUrl m_url;
     bool m_debug;
     bool m_compression;
-    //QtWS m_qtws;
 };
 
 #endif // ECHOCLIENT_H
