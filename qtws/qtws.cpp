@@ -224,7 +224,24 @@ void QtWS::startBackboneWatchdog()
  */
 void QtWS::log(QString msg)
 {
-    std::cout << msg.toUtf8().constData() << std::endl;
+    QString s;
+    QDate date(QDate::currentDate());
+    QTime time(QTime::currentTime());
+    QString ts(QString::number(date.year())
+                   .append(":")
+                   .append(s.sprintf("%02d", date.month()))
+                   .append(":")
+                   .append(s.sprintf("%02d", date.day()))
+                   .append(" ")
+                   .append(s.sprintf("%02d", time.hour()))
+                   .append(":")
+                   .append(s.sprintf("%02d", time.minute()))
+                   .append(":")
+                   .append(s.sprintf("%02d", time.second()))
+                   .append(".")
+                   .append(s.sprintf("%03d", time.msec()))
+                   .append(" "));
+    std::cout << ts.toUtf8().constData() << msg.toUtf8().constData() << std::endl;
 }
 
 /**
