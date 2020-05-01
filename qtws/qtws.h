@@ -5,7 +5,9 @@
 #include <QByteArray>
 #include <QString>
 #include <QTimer>
+#include <QTranslator>
 #include <QUrl>
+#include <QtCore/QCoreApplication>
 #include <QtNetwork/QSslError>
 #include <QtWebSockets/QWebSocket>
 #include <QtWebSockets/QWebSocketServer>
@@ -21,7 +23,9 @@ class QtWS : public QObject {
     Q_OBJECT
 
 public:
-    QtWS();
+    static QtWS* getInstance();
+
+    static QtWS* instance;
 
     QWebSocketServer *m_pWebSocketServer, *m_pWebSocketServerSSL;
     QWebSocket* m_pWebSocketBackbone;
@@ -37,9 +41,14 @@ public slots:
     void startBackboneWatchdog();
     QString trans(QString text);
     void log(QString msg);
+    void loadTranslation(QCoreApplication* app);
+    QString wsInfo(QString msg, QWebSocket* pSocket);
 
 private:
+    QtWS();
+
     QTimer keepaliveTimer;
+    QTranslator qtTranslator, qtTranslatorLib, qtTranslatorClient, qtTranslatorServer;
 };
 
 #endif // QTWS_H

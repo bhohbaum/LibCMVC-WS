@@ -1,12 +1,23 @@
 #include "qtws.h"
 
+QtWS* QtWS::instance = nullptr;
+
 QtWS::QtWS()
 {
+    Q_INIT_RESOURCE(qtws);
+
     m_pWebSocketBackbone = new QWebSocket();
     keepaliveTimer.setInterval(1000);
     connect(&keepaliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePing()));
 
     startBackboneWatchdog();
+}
+
+QtWS* QtWS::getInstance()
+{
+    if (QtWS::instance == nullptr)
+        QtWS::instance = new QtWS();
+    return instance;
 }
 
 /**
@@ -176,4 +187,42 @@ QString QtWS::trans(QString text)
 void QtWS::log(QString msg)
 {
     std::cout << msg.toUtf8().constData() << std::endl;
+}
+
+void QtWS::loadTranslation(QCoreApplication* app)
+{
+    QString trFileLib, trFileClient, trFileServer;
+
+    trFileLib.append(":/qtws/qtws_").append(QLocale::system().name().split("_").at(0)).append(".qm");
+    trFileClient.append(":/qtwsclient/qtws_")
+        .append(QLocale::system().name().split("_").at(0))
+        .append(".qm");
+    trFileServer.append(":/qtwsserver/qtws_")
+        .append(QLocale::system().name().split("_").at(0))
+        .append(".qm");
+
+    qtTranslator.load(QLocale::system(), QStringLiteral("qtbase_"));
+    qtTranslatorLib.load(trFileLib);
+    qtTranslatorClient.load(trFileClient);
+    qtTranslatorServer.load(trFileServer);
+
+    app->installTranslator(&qtTranslatorLib);
+    app->installTranslator(&qtTranslatorClient);
+    app->installTranslator(&qtTranslatorServer);
+}
+
+QString QtWS::wsInfo(QString msg, QWebSocket* pSocket)
+{
+    QString message;
+    message.append(msg)
+        .append(pSocket->peerName())
+        .append(" ")
+        .append(pSocket->origin())
+        .append(" ")
+        .append(pSocket->peerAddress().toString())
+        .append(" ")
+        .append(QString::number(pSocket->peerPort()))
+        .append(" ")
+        .append(pSocket->requestUrl().toString());
+    return message;
 }

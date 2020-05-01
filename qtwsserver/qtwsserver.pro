@@ -21,12 +21,12 @@ TRANSLATIONS += \
 
 LIBS += -L../qtws/ -lqtws -lz
 
-RESOURCES += securesocketclient.qrc
+RESOURCES +=
 DISTFILES += $$RESOURCES
 
 target.path = /usr/local/bin
 INSTALLS += target
 
-system("lupdate qtwsserver.pro -recursive -tr-function-alias tr=trans")
+system("lupdate qtwsserver.pro -recursive")
 system("lrelease qtwsserver.pro")
 

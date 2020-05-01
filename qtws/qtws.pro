@@ -23,7 +23,7 @@ HEADERS += \
 	qtws.h
 
 TRANSLATIONS += \
-	qtws_de_001.ts \
+	qtws_de.ts \
 	../qtwsclient/qtws_de.ts \
 	../qtwsserver/qtws_de.ts \
 
@@ -46,4 +46,3 @@ INSTALLS += target
 
 system("lupdate qtws.pro -recursive -tr-function-alias tr=trans")
 system("lrelease qtws.pro")
-

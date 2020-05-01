@@ -10,7 +10,11 @@ void quit_app()
 
 int main(int argc, char* argv[])
 {
+    Q_INIT_RESOURCE(qtws);
+
     QCoreApplication a(argc, argv);
+
+    QtWS::getInstance()->loadTranslation(&a);
 
     QCommandLineParser parser;
     parser.setApplicationDescription("LibCMVC Websocket Client");
@@ -22,7 +26,7 @@ int main(int argc, char* argv[])
     parser.addOption(dbgOption);
     QCommandLineOption compressOption(QStringList() << "c"
                                                     << "compress",
-        QCoreApplication::translate("main", "Compress data for transmission [default: plain text]."));
+        QCoreApplication::translate("main", "Compress data for transmission [default: raw data]."));
     parser.addOption(compressOption);
     parser.process(a);
     bool debug = parser.isSet(dbgOption);

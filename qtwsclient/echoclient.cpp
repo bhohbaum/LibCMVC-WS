@@ -11,24 +11,28 @@ EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, QObject* p
     , m_debug(debug)
     , m_compression(compression)
 {
-    if (m_debug)
-        qDebug() << "WebSocket server:" << url;
-    //m_qtws.m_pWebSocketBackbone = new QWebSocket();
-    connect(m_qtws.m_pWebSocketBackbone, &QWebSocket::connected, this, &EchoClient::onConnected);
-    connect(m_qtws.m_pWebSocketBackbone, &QWebSocket::disconnected, this, &EchoClient::closed);
-    connect(m_qtws.m_pWebSocketBackbone, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), &m_qtws, &QtWS::onSslErrors);
+    if (m_debug) {
+        QString msg(tr("WebSocket server: "));
+        msg.append(url.toString());
+        QtWS::getInstance()->log(msg);
+    }
+    //QtWS::getInstance()->m_pWebSocketBackbone = new QWebSocket();
+    connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::connected, this, &EchoClient::onConnected);
+    connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::disconnected, this, &EchoClient::closed);
+    connect(QtWS::getInstance()->m_pWebSocketBackbone, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), QtWS::getInstance(), &QtWS::onSslErrors);
 
-    m_qtws.m_pWebSocketBackbone->open(QUrl(url));
+    QtWS::getInstance()->m_pWebSocketBackbone->open(QUrl(url));
 }
 //! [constructor]
 
 //! [onConnected]
 void EchoClient::onConnected()
 {
-    if (m_debug)
-        qDebug() << "WebSocket connected";
-    connect(m_qtws.m_pWebSocketBackbone, &QWebSocket::textMessageReceived, this, &EchoClient::onTextMessageReceived);
-    connect(m_qtws.m_pWebSocketBackbone, &QWebSocket::binaryMessageReceived, this, &EchoClient::onBinaryMessageReceived);
+    if (m_debug) {
+        QtWS::getInstance()->log(tr("WebSocket connected"));
+    }
+    connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::textMessageReceived, this, &EchoClient::onTextMessageReceived);
+    connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::binaryMessageReceived, this, &EchoClient::onBinaryMessageReceived);
     QByteArray content;
 #ifdef Q_OS_WIN32
     _setmode(_fileno(stdin), _O_BINARY);
@@ -43,15 +47,18 @@ void EchoClient::onConnected()
     text = text.fromUtf8(content);
     QString msgComp;
     if (m_compression)
-        msgComp = "(compressed, binary)";
-    if (m_debug)
-        qDebug() << "Sending message:" << msgComp << text;
+        msgComp = tr(" (compressed, binary)");
+    if (m_debug) {
+        QString msg(tr("Sending message"));
+        msg.append(msgComp).append(": ").append(text);
+        QtWS::getInstance()->log(msg);
+    }
     if (m_compression) {
         QByteArray ba;
-        m_qtws.gzipCompress(text.toUtf8(), ba, 9);
-        m_qtws.m_pWebSocketBackbone->sendBinaryMessage(ba);
+        QtWS::getInstance()->gzipCompress(text.toUtf8(), ba, 9);
+        QtWS::getInstance()->m_pWebSocketBackbone->sendBinaryMessage(ba);
     } else {
-        m_qtws.m_pWebSocketBackbone->sendTextMessage(text);
+        QtWS::getInstance()->m_pWebSocketBackbone->sendTextMessage(text);
     }
 }
 //! [onConnected]
@@ -59,19 +66,25 @@ void EchoClient::onConnected()
 //! [onTextMessageReceived]
 void EchoClient::onTextMessageReceived(QString message)
 {
-    if (m_debug)
-        qDebug() << "Message received:" << message;
-    m_qtws.m_pWebSocketBackbone->close();
+    if (m_debug) {
+        QString msg(tr("Message received: "));
+        msg.append(message);
+        QtWS::getInstance()->log(msg);
+    }
+    QtWS::getInstance()->m_pWebSocketBackbone->close();
 }
 //! [onTextMessageReceived]
 
 void EchoClient::onBinaryMessageReceived(QByteArray message)
 {
     QByteArray ba;
-    if (m_qtws.gzipDecompress(message, ba)) {
+    if (QtWS::getInstance()->gzipDecompress(message, ba)) {
         message = ba;
     }
-    if (m_debug)
-        qDebug() << "Message received:" << message;
-    m_qtws.m_pWebSocketBackbone->close();
+    if (m_debug) {
+        QString msg(tr("Message received: "));
+        msg.append(message);
+        QtWS::getInstance()->log(msg);
+    }
+    QtWS::getInstance()->m_pWebSocketBackbone->close();
 }

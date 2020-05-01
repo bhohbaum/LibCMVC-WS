@@ -8,23 +8,16 @@
 int main(int argc, char* argv[])
 {
     Q_INIT_RESOURCE(qtws);
-    Q_INIT_RESOURCE(securesocketclient);
 
     QCoreApplication a(argc, argv);
     unsigned short p = 0;
     unsigned short ps = 0;
     bool encrypted = false;
-    QString certificate(":/localhost.cert");
-    QString key(":/localhost.key");
+    QString certificate(":/cert/localhost.cert");
+    QString key(":/cert/localhost.key");
     QString bbUrl("");
 
-    QString trFile;
-    trFile.append(":/qtws_").append(QLocale::system().name().split("_").at(0)).append("_001.qm");
-
-    QTranslator qtTranslator;
-    qtTranslator.load(QLocale::system(), QStringLiteral("qtbase_"));
-    qtTranslator.load(trFile);
-    a.installTranslator(&qtTranslator);
+    QtWS::getInstance()->loadTranslation(&a);
 
     if (argc == 2) {
         QString port(argv[1]);

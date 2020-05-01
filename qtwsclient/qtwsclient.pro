@@ -24,5 +24,5 @@ LIBS += -L../qtws/ -lqtws -lz
 target.path = /usr/local/bin
 INSTALLS += target
 
-system("lupdate qtwsclient.pro -recursive -tr-function-alias tr=trans")
+system("lupdate qtwsclient.pro -recursive")
 system("lrelease qtwsclient.pro")
