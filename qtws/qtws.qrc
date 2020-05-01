@@ -1,7 +1,8 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
 	<qresource prefix="/">
-		<file>qtws_de_001.ts</file>
-		<file>qtws_de_001.qm</file>
+	<file>qtws_de_001.qm</file>
+	<file alias="qtwsclient/qtws_de.qm">../qtwsclient/qtws_de.qm</file>
+	<file alias="qtwsserver/qtws_de.qm">../qtwsserver/qtws_de.qm</file>
 	</qresource>
 </RCC>

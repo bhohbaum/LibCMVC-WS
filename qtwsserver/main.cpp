@@ -18,13 +18,12 @@ int main(int argc, char* argv[])
     QString key(":/localhost.key");
     QString bbUrl("");
 
-    QString trde;
-    trde.append(":/qtws_").append(QLocale::system().name().split("_").at(0)).append("_001.qm");
-    qDebug() << trde;
+    QString trFile;
+    trFile.append(":/qtws_").append(QLocale::system().name().split("_").at(0)).append("_001.qm");
 
     QTranslator qtTranslator;
     qtTranslator.load(QLocale::system(), QStringLiteral("qtbase_"));
-    qtTranslator.load(trde);
+    qtTranslator.load(trFile);
     a.installTranslator(&qtTranslator);
 
     if (argc == 2) {

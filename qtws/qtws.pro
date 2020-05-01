@@ -23,10 +23,14 @@ HEADERS += \
 	qtws.h
 
 TRANSLATIONS += \
-	qtws_de_001.ts
+	qtws_de_001.ts \
+	../qtwsclient/qtws_de.ts \
+	../qtwsserver/qtws_de.ts \
 
-DISTFILES += \
-	qtws_de_001.qm
+#DISTFILES += \
+#	qtws_de_001.qm \
+#	../qtwsclient/qtws_de.qm \
+#	../qtwsserver/qtws_de.qm \
 
 RESOURCES += \
 	qtws.qrc

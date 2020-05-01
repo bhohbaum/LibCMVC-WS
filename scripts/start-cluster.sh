@@ -4,9 +4,9 @@
 
 for A in `seq 0 1`
 do
-	for B in `seq 0 5`
+	for B in `seq 0 1`
 	do
-		for C in `seq 0 9`
+		for C in `seq 0 5`
 		do
 			for D in `seq 0 9`
 			do

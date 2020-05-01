@@ -16,8 +16,13 @@ HEADERS += \
 	echoclient.h \
 	../qtws/qtws.h \
 
+TRANSLATIONS += \
+	qtws_de.ts
 
 LIBS += -L../qtws/ -lqtws -lz
 
 target.path = /usr/local/bin
 INSTALLS += target
+
+system("lupdate qtwsclient.pro -recursive -tr-function-alias tr=trans")
+system("lrelease qtwsclient.pro")
