@@ -87,5 +87,9 @@
         <source> Connections to other servers: </source>
         <translation> Verbindungen zu anderen Server: </translation>
     </message>
+    <message>
+        <source>New SSL connection...</source>
+        <translation>Neue SSL Verbindung...</translation>
+    </message>
 </context>
 </TS>

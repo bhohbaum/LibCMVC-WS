@@ -150,7 +150,7 @@ void SslEchoServer::onNewConnection()
  */
 void SslEchoServer::onNewSSLConnection()
 {
-    qDebug() << "New SSL connection...";
+    QtWS::getInstance()->log(tr("New SSL connection..."));
     QWebSocket* pSocket;
     pSocket = QtWS::getInstance()->m_pWebSocketServerSSL->nextPendingConnection();
     while (pSocket != nullptr) {
