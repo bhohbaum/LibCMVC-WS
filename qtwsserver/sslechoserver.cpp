@@ -396,6 +396,7 @@ void SslEchoServer::restoreBackboneConnection()
 void SslEchoServer::resetBackboneConnection()
 {
     LOG(tr("Preparing for a full restart...."));
+    bbResetTimer.stop();
     QtWS::getInstance()->stopKeepAliveTimer();
     QtWS::getInstance()->m_pWebSocketBackbone->disconnect();
     QtWS::getInstance()->m_pWebSocketBackbone->close();
