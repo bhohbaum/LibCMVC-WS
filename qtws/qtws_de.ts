@@ -19,5 +19,28 @@
         <source>Exiting process...</source>
         <translation>Beende den Prozess...</translation>
     </message>
+    <message>
+        <source>Client identified as another server, moving connection to backbone pool: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Received channel list update notification from: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channels: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>WsMetaData</name>
+    <message>
+        <source>Adding new MetaData element to list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Removing old MetaData element from list.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>

@@ -2,6 +2,13 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="de_DE" sourcelanguage="en_150">
 <context>
+    <name>QtWS</name>
+    <message>
+        <source>Client identified as another server, moving connection to backbone pool: </source>
+        <translation type="obsolete">Der Client hat sich als ein anderer Server zu erkennen gegeben, verschiebe die Verbindung in die Backbone-Gruppe: </translation>
+    </message>
+</context>
+<context>
     <name>SslEchoServer</name>
     <message>
         <source>Error opening SSL certificate.</source>
@@ -41,7 +48,7 @@
     </message>
     <message>
         <source>Client identified as another server, moving connection to backbone pool: </source>
-        <translation>Der Client hat sich als ein anderer Server zu erkennen gegeben, verschiebe die Verbindung in die Backbone-Gruppe: </translation>
+        <translation type="vanished">Der Client hat sich als ein anderer Server zu erkennen gegeben, verschiebe die Verbindung in die Backbone-Gruppe: </translation>
     </message>
     <message>
         <source>Client disconnected: </source>
@@ -93,7 +100,7 @@
     </message>
     <message>
         <source>Channel query in progress...</source>
-        <translation>Kanalabfrage läuft gerade...</translation>
+        <translation type="vanished">Kanalabfrage läuft gerade...</translation>
     </message>
 </context>
 </TS>

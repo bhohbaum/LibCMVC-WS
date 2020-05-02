@@ -11,7 +11,6 @@
 #include "../qtws/wsmetadata.h"
 
 QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
-QT_FORWARD_DECLARE_CLASS(QWebSocket)
 
 class SslEchoServer : public QObject {
     Q_OBJECT

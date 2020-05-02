@@ -300,3 +300,64 @@ void QtWS::quitApplication()
     LOG(tr("Exiting process..."));
     QCoreApplication::quit();
 }
+
+WsMetaData* QtWS::findMetaDataByWebSocket(QWebSocket* pSocket)
+{
+    for (int i = 0; i < m_wsMetaDataList.length(); i++) {
+        if (m_wsMetaDataList.at(i)->getWebSocket() == pSocket)
+            return m_wsMetaDataList.at(i);
+    }
+    return nullptr;
+}
+
+QString QtWS::buildChannelListString(QStringList wmd)
+{
+    QString res;
+    for (int k = 0; k < wmd.length(); k++) {
+        res.append(wmd.at(k)).append(" ");
+    }
+    return res.trimmed();
+}
+
+QString QtWS::buildChannelListString(QList<WsMetaData*>* wmd)
+{
+    QString res;
+    wmd = (wmd == nullptr) ? &m_wsMetaDataList : wmd;
+    for (int i = 0; i < wmd->length(); i++) {
+        for (int k = 0; k < wmd->at(i)->getChannels().length(); k++) {
+            res.append(wmd->at(i)->getChannels().at(k)).append(" ");
+        }
+    }
+    return res.trimmed();
+}
+
+QStringList QtWS::buildChannelListArray(QString channels)
+{
+    return channels.split(" ");
+}
+
+void QtWS::handleBackboneRegistration(QWebSocket* pClient)
+{
+    QtWS::getInstance()->m_clients.removeAll(pClient);
+    QtWS::getInstance()->m_backbones.removeAll(pClient);
+    QtWS::getInstance()->m_backbones << pClient;
+    LOG(QtWS::getInstance()->wsInfo(
+        tr("Client identified as another server, moving connection to backbone pool: "), pClient));
+}
+
+void QtWS::handleChannelListNotification(QString message, QWebSocket* pClient)
+{
+    LOG(wsInfo(tr("Received channel list update notification from: "), pClient));
+    QStringList arr = buildChannelListArray(message);
+    arr.pop_front();
+    WsMetaData* wmd = findMetaDataByWebSocket(pClient);
+    wmd->clearChannels();
+    wmd->addChannels(arr);
+    QString str(tr("Channels: "));
+    LOG(str.append(buildChannelListString(arr)));
+}
+
+QString QtWS::getChannelFromSocket(QWebSocket* pSocket)
+{
+    return pSocket->request().url().path();
+}

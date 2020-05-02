@@ -66,6 +66,10 @@ void EchoClient::onConnected()
     } else {
         QtWS::getInstance()->m_pWebSocketBackbone->sendTextMessage(text);
     }
+    if (text.startsWith(BACKBONE_REGISTRATION_MSG) || text.startsWith(CHANNEL_LIST_NOTIFICATION) || m_debug == false) {
+        QtWS::getInstance()->m_pWebSocketBackbone->flush();
+        emit closed();
+    }
 }
 
 /**

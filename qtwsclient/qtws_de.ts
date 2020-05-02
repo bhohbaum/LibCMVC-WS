@@ -24,8 +24,8 @@
         <translation>Sende Nachricht</translation>
     </message>
     <message>
-        <location filename="echoclient.cpp" line="78"/>
-        <location filename="echoclient.cpp" line="96"/>
+        <location filename="echoclient.cpp" line="82"/>
+        <location filename="echoclient.cpp" line="100"/>
         <source>Message received: </source>
         <translation>Nachricht empfangen: </translation>
     </message>

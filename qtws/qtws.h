@@ -15,6 +15,8 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#include "wsmetadata.h"
+
 #define LOG(msg) QtWS::getInstance()->log(msg);
 
 #define GZIP_WINDOWS_BIT 15 + 16 // gzip only decoding
@@ -22,7 +24,7 @@
 #define GZIP_CHUNK_SIZE 32 * 1024
 
 constexpr char BACKBONE_REGISTRATION_MSG[32] = "___BACKBONE_REGISTRATION_MSG___";
-constexpr char CHANNEL_LIST_QUERY_MSG[32] = "____CHANNEL_LIST__QUERY_MSG____";
+constexpr char CHANNEL_LIST_NOTIFICATION[32] = "___CHANNEL_LIST_NOTIFICATION___";
 
 class QtWS : public QObject {
     Q_OBJECT
@@ -40,6 +42,8 @@ public:
     QList<QWebSocket*> m_clients;
     QList<QWebSocket*> m_backbones;
 
+    QList<WsMetaData*> m_wsMetaDataList;
+
 public slots:
     bool gzipCompress(QByteArray input, QByteArray& output, int level = -1);
     bool gzipDecompress(QByteArray input, QByteArray& output);
@@ -53,6 +57,13 @@ public slots:
     void stopKeepAliveTimer();
     void startBackboneWatchdog();
     void quitApplication();
+    WsMetaData* findMetaDataByWebSocket(QWebSocket* pSocket);
+    QString buildChannelListString(QStringList wmd);
+    QString buildChannelListString(QList<WsMetaData*>* wmd);
+    QStringList buildChannelListArray(QString channels);
+    void handleBackboneRegistration(QWebSocket* pClient);
+    void handleChannelListNotification(QString message, QWebSocket* pClient);
+    QString getChannelFromSocket(QWebSocket* pSocket);
 
 private:
     QtWS();

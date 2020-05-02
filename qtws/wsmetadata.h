@@ -4,26 +4,31 @@
 #include <QObject>
 #include <QtWebSockets/QWebSocket>
 
-QT_FORWARD_DECLARE_CLASS(ExtWebSocket)
+QT_FORWARD_DECLARE_CLASS(QWebSocket)
 
 class WsMetaData : public QObject {
     Q_OBJECT
 
-    friend ExtWebSocket;
+    friend QWebSocket;
 
 public:
     explicit WsMetaData(QObject* parent = nullptr);
-    void addChannels(QList<QString> channels);
+    ~WsMetaData();
+
+    void clearChannels();
+    void addChannels(QStringList channels);
     void addChannel(QString channel);
-    QList<QString> getChannels();
-    ExtWebSocket* getWebSocket();
+    QStringList getChannels();
+    QWebSocket* getWebSocket();
+    void setWebSocket(QWebSocket* pSocket);
+    bool isBackboneSocket();
+    bool isClientSocket();
 
 signals:
 
 private:
-    void setWebSocket(ExtWebSocket* pSocket);
-
-    QList<QString> m_channels;
+    QStringList m_channels;
+    QWebSocket* m_webSocket;
 };
 
 #endif // WSMETADATA_H

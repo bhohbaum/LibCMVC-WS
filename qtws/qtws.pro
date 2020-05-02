@@ -8,12 +8,10 @@ CONFIG += c++11
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
-	extwebsocket.cpp \
 	qtws.cpp \
 	wsmetadata.cpp
 
 HEADERS += \
-	extwebsocket.h \
 	qtws.h \
 	wsmetadata.h
 
