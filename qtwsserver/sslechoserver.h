@@ -8,6 +8,7 @@
 #include <QtNetwork/QSslError>
 
 #include "../qtws/qtws.h"
+#include "../qtws/wsmetadata.h"
 
 QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
@@ -37,13 +38,9 @@ private slots:
     void resetBackboneResetTimer();
 
 private:
-    QList<QWebSocket*> m_clients;
     QMap<QString, QList<QWebSocket*>> m_channels;
-    QList<QWebSocket*> m_backbones;
-
-    QString m_sBackbone = "";
-
     QTimer bbResetTimer;
+    QString m_sBackbone = "";
 };
 
 #endif //SSLECHOSERVER_H

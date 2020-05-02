@@ -37,6 +37,9 @@ public:
     QWebSocketServer *m_pWebSocketServer, *m_pWebSocketServerSSL;
     QWebSocket* m_pWebSocketBackbone;
 
+    QList<QWebSocket*> m_clients;
+    QList<QWebSocket*> m_backbones;
+
 public slots:
     bool gzipCompress(QByteArray input, QByteArray& output, int level = -1);
     bool gzipDecompress(QByteArray input, QByteArray& output);

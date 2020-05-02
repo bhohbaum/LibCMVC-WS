@@ -106,8 +106,8 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
             &QWebSocket::pong,
             this,
             &SslEchoServer::resetBackboneResetTimer);
-        m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
-        m_backbones << QtWS::getInstance()->m_pWebSocketBackbone;
+        QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
+        QtWS::getInstance()->m_backbones << QtWS::getInstance()->m_pWebSocketBackbone;
         bbResetTimer.setInterval(3500);
         connect(&bbResetTimer, SIGNAL(timeout()), this, SLOT(resetBackboneConnection()));
         bbResetTimer.start();
@@ -122,8 +122,8 @@ SslEchoServer::~SslEchoServer()
 {
     QtWS::getInstance()->m_pWebSocketServer->close();
     QtWS::getInstance()->m_pWebSocketServerSSL->close();
-    qDeleteAll(m_clients.begin(), m_clients.end());
-    qDeleteAll(m_backbones.begin(), m_backbones.end());
+    qDeleteAll(QtWS::getInstance()->m_clients.begin(), QtWS::getInstance()->m_clients.end());
+    qDeleteAll(QtWS::getInstance()->m_backbones.begin(), QtWS::getInstance()->m_backbones.end());
 }
 
 /**
@@ -139,8 +139,8 @@ void SslEchoServer::onNewConnection()
         connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &SslEchoServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
-        m_clients.removeAll(pSocket);
-        m_clients << pSocket;
+        QtWS::getInstance()->m_clients.removeAll(pSocket);
+        QtWS::getInstance()->m_clients << pSocket;
         pSocket = QtWS::getInstance()->m_pWebSocketServer->nextPendingConnection();
     }
 }
@@ -165,8 +165,8 @@ void SslEchoServer::onNewSSLConnection()
             QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),
             QtWS::getInstance(),
             &QtWS::onSslErrors);
-        m_clients.removeAll(pSocket);
-        m_clients << pSocket;
+        QtWS::getInstance()->m_clients.removeAll(pSocket);
+        QtWS::getInstance()->m_clients << pSocket;
         pSocket = QtWS::getInstance()->m_pWebSocketServerSSL->nextPendingConnection();
     }
 }
@@ -190,8 +190,8 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     channel = (channel == "") ? pClient->request().url().path() : channel;
     if (channel == "/") {
-        for (int i = 0; i < m_backbones.count(); i++) {
-            if (pClient == m_backbones[i]) {
+        for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
+            if (pClient == QtWS::getInstance()->m_backbones[i]) {
                 QStringList arr = message.split("\n");
                 channel = arr[0];
                 arr.pop_front();
@@ -201,33 +201,33 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
     }
     if (pClient) {
         if (message == BACKBONE_REGISTRATION_MSG) {
-            m_clients.removeAll(pClient);
-            m_backbones.removeAll(pClient);
-            m_backbones << pClient;
+            QtWS::getInstance()->m_clients.removeAll(pClient);
+            QtWS::getInstance()->m_backbones.removeAll(pClient);
+            QtWS::getInstance()->m_backbones << pClient;
             LOG(QtWS::getInstance()->wsInfo(
                 tr("Client identified as another server, moving connection to backbone pool: "),
                 pClient));
         } else if (message == CHANNEL_LIST_QUERY_MSG) {
-            m_clients.removeAll(pClient);
-            m_backbones.removeAll(pClient);
-            m_backbones << pClient;
+            QtWS::getInstance()->m_clients.removeAll(pClient);
+            QtWS::getInstance()->m_backbones.removeAll(pClient);
+            QtWS::getInstance()->m_backbones << pClient;
             LOG(QtWS::getInstance()->wsInfo(
                 tr("Client identified as another server, moving connection to backbone pool: "),
                 pClient));
         } else {
             int ctr = 0, ctr2 = 0;
-            for (int i = 0; i < m_clients.count(); i++) {
-                if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
-                    m_clients[i]->sendTextMessage(message);
+            for (int i = 0; i < QtWS::getInstance()->m_clients.count(); i++) {
+                if (QtWS::getInstance()->m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
+                    QtWS::getInstance()->m_clients[i]->sendTextMessage(message);
                     ctr++;
                 }
             }
             QString bbMessage(channel);
             bbMessage.append("\n");
             bbMessage.append(message);
-            for (int i = 0; i < m_backbones.count(); i++) {
-                if (pClient != m_backbones[i]) {
-                    m_backbones[i]->sendTextMessage(bbMessage);
+            for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
+                if (pClient != QtWS::getInstance()->m_backbones[i]) {
+                    QtWS::getInstance()->m_backbones[i]->sendTextMessage(bbMessage);
                     ctr2++;
                 }
             }
@@ -245,9 +245,9 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
     }
     QString msg2;
     msg2.append(tr("Total number of clients: "))
-        .append(QString::number(m_clients.count()))
+        .append(QString::number(QtWS::getInstance()->m_clients.count()))
         .append(tr(" Connections to other servers: "))
-        .append(QString::number(m_backbones.count()));
+        .append(QString::number(QtWS::getInstance()->m_backbones.count()));
     LOG(msg2);
 }
 
@@ -276,8 +276,8 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
         message = ba;
     }
     if (channel == "/") {
-        for (int i = 0; i < m_backbones.count(); i++) {
-            if (pClient == m_backbones[i]) {
+        for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
+            if (pClient == QtWS::getInstance()->m_backbones[i]) {
                 QStringList arr = msg.split("\n");
                 channel = arr[0];
                 arr.pop_front();
@@ -295,16 +295,16 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     QByteArray cbbMessage(ba);
     if (pClient) {
         if (message == BACKBONE_REGISTRATION_MSG) {
-            m_clients.removeAll(pClient);
-            m_backbones.removeAll(pClient);
-            m_backbones << pClient;
+            QtWS::getInstance()->m_clients.removeAll(pClient);
+            QtWS::getInstance()->m_backbones.removeAll(pClient);
+            QtWS::getInstance()->m_backbones << pClient;
             LOG(QtWS::getInstance()->wsInfo(
                 tr("Client identified as another server, moving connection to backbone pool: "),
                 pClient));
         } else if (message == CHANNEL_LIST_QUERY_MSG) {
-            for (int i = 0; i < m_backbones.count(); i++) {
-                if (pClient != m_backbones[i]) {
-                    m_backbones[i]->sendBinaryMessage(CHANNEL_LIST_QUERY_MSG);
+            for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
+                if (pClient != QtWS::getInstance()->m_backbones[i]) {
+                    QtWS::getInstance()->m_backbones[i]->sendBinaryMessage(CHANNEL_LIST_QUERY_MSG);
                 }
             }
             LOG(QtWS::getInstance()->wsInfo(
@@ -312,15 +312,15 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
                 pClient));
         } else {
             int ctr = 0, ctr2 = 0;
-            for (int i = 0; i < m_clients.count(); i++) {
-                if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
-                    m_clients[i]->sendBinaryMessage(cMessage);
+            for (int i = 0; i < QtWS::getInstance()->m_clients.count(); i++) {
+                if (QtWS::getInstance()->m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
+                    QtWS::getInstance()->m_clients[i]->sendBinaryMessage(cMessage);
                     ctr++;
                 }
             }
-            for (int i = 0; i < m_backbones.count(); i++) {
-                if (pClient != m_backbones[i]) {
-                    m_backbones[i]->sendBinaryMessage(cbbMessage);
+            for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
+                if (pClient != QtWS::getInstance()->m_backbones[i]) {
+                    QtWS::getInstance()->m_backbones[i]->sendBinaryMessage(cbbMessage);
                     ctr2++;
                 }
             }
@@ -338,9 +338,9 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     }
     QString msg2;
     msg2.append(tr("Total number of clients: "))
-        .append(QString::number(m_clients.count()))
+        .append(QString::number(QtWS::getInstance()->m_clients.count()))
         .append(tr(" Connections to other servers: "))
-        .append(QString::number(m_backbones.count()));
+        .append(QString::number(QtWS::getInstance()->m_backbones.count()));
     LOG(msg2);
 }
 
@@ -352,8 +352,8 @@ void SslEchoServer::socketDisconnected()
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     LOG(QtWS::getInstance()->wsInfo(tr("Client disconnected: "), pClient));
     if (pClient) {
-        m_clients.removeAll(pClient);
-        m_backbones.removeAll(pClient);
+        QtWS::getInstance()->m_clients.removeAll(pClient);
+        QtWS::getInstance()->m_backbones.removeAll(pClient);
         pClient->deleteLater();
     }
 }
@@ -373,7 +373,7 @@ void SslEchoServer::onBackboneDisconnected()
 {
     LOG(tr("Backbone disconnected. Restoring connection...."));
     bbResetTimer.stop();
-    m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
+    QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
     QTimer timer(this);
     timer.singleShot(1000, this, SLOT(restoreBackboneConnection()));
 }
@@ -385,8 +385,8 @@ void SslEchoServer::restoreBackboneConnection()
 {
     LOG(tr("Opening new backbone connection...."));
     QtWS::getInstance()->m_pWebSocketBackbone->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone));
-    m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
-    m_backbones << QtWS::getInstance()->m_pWebSocketBackbone;
+    QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
+    QtWS::getInstance()->m_backbones << QtWS::getInstance()->m_pWebSocketBackbone;
     bbResetTimer.start();
 }
 
@@ -399,17 +399,17 @@ void SslEchoServer::resetBackboneConnection()
     QtWS::getInstance()->stopKeepAliveTimer();
     QtWS::getInstance()->m_pWebSocketBackbone->disconnect();
     QtWS::getInstance()->m_pWebSocketBackbone->close();
-    m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
-    m_clients.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
+    QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
+    QtWS::getInstance()->m_clients.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
     delete QtWS::getInstance()->m_pWebSocketBackbone;
 
-    for (int i = 0; i < m_backbones.count(); i++) {
-        if (m_backbones.at(i) != nullptr)
-            m_backbones.at(i)->close();
+    for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
+        if (QtWS::getInstance()->m_backbones.at(i) != nullptr)
+            QtWS::getInstance()->m_backbones.at(i)->close();
     }
-    for (int i = 0; i < m_clients.count(); i++) {
-        if (m_clients.at(i) != nullptr)
-            m_clients.at(i)->close();
+    for (int i = 0; i < QtWS::getInstance()->m_clients.count(); i++) {
+        if (QtWS::getInstance()->m_clients.at(i) != nullptr)
+            QtWS::getInstance()->m_clients.at(i)->close();
     }
 
     QtWS::getInstance()->m_pWebSocketServer->close();
