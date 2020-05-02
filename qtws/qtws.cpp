@@ -361,3 +361,13 @@ QString QtWS::getChannelFromSocket(QWebSocket* pSocket)
 {
     return pSocket->request().url().path();
 }
+
+bool QtWS::getChannelFromMessage(QString* message, QString* channel)
+{
+    QString msg(*message);
+    QStringList arr = msg.split("\n");
+    *channel = arr[0];
+    arr.pop_front();
+    msg = arr.join("\n");
+    *message = msg.toUtf8();
+}

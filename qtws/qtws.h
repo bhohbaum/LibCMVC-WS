@@ -64,6 +64,7 @@ public slots:
     void handleBackboneRegistration(QWebSocket* pClient);
     void handleChannelListNotification(QString message, QWebSocket* pClient);
     QString getChannelFromSocket(QWebSocket* pSocket);
+    bool getChannelFromMessage(QString* message, QString* channel);
 
 private:
     QtWS();

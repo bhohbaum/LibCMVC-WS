@@ -208,10 +208,7 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
     if (channel == "/") {
         for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
             if (pClient == QtWS::getInstance()->m_backbones[i]) {
-                QStringList arr = message.split("\n");
-                channel = arr[0];
-                arr.pop_front();
-                message = arr.join("\n");
+                QtWS::getInstance()->getChannelFromMessage(&message, &channel);
             }
         }
     }
@@ -284,10 +281,7 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     if (channel == "/") {
         for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
             if (pClient == QtWS::getInstance()->m_backbones[i]) {
-                QStringList arr = msg.split("\n");
-                channel = arr[0];
-                arr.pop_front();
-                msg = arr.join("\n");
+                QtWS::getInstance()->getChannelFromMessage(&msg, &channel);
                 message = msg.toUtf8();
             }
         }
@@ -425,10 +419,8 @@ void SslEchoServer::resetBackboneConnection()
  */
 void SslEchoServer::processTextMessageBB(QString message)
 {
-    QStringList arr = message.split("\n");
-    QString channel = arr[0];
-    arr.pop_front();
-    message = arr.join("\n");
+    QString channel;
+    QtWS::getInstance()->getChannelFromMessage(&message, &channel);
     __processTextMessage(message, channel);
 }
 
@@ -444,10 +436,8 @@ void SslEchoServer::processBinaryMessageBB(QByteArray message)
         msg = ba;
         message = ba;
     }
-    QStringList arr = msg.split("\n");
-    QString channel = arr[0];
-    arr.pop_front();
-    msg = arr.join("\n");
+    QString channel;
+    QtWS::getInstance()->getChannelFromMessage(&msg, &channel);
     __processBinaryMessage(msg.toUtf8(), channel);
 }
 
