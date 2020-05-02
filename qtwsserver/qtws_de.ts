@@ -56,10 +56,6 @@
         <translation>Öffne neue Verbindung zum Backbone....</translation>
     </message>
     <message>
-        <source>Doing a full restart....</source>
-        <translation type="vanished">Mache einen kompletten Neustart....</translation>
-    </message>
-    <message>
         <source>Distributing event to </source>
         <translation>Verteile Ereignis an </translation>
     </message>
