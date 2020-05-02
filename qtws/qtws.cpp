@@ -219,7 +219,7 @@ void QtWS::startBackboneWatchdog()
 }
 
 /**
- * @brief QtWS::log
+ * @brief QtWS::log Print a message
  * @param msg
  */
 void QtWS::log(QString msg)
@@ -229,23 +229,23 @@ void QtWS::log(QString msg)
     QTime time(QTime::currentTime());
     QString ts(QString::number(date.year())
                    .append(":")
-                   .append(s.sprintf("%02d", date.month()))
+                   .append(s.asprintf("%02d", date.month()))
                    .append(":")
-                   .append(s.sprintf("%02d", date.day()))
+                   .append(s.asprintf("%02d", date.day()))
                    .append(" ")
-                   .append(s.sprintf("%02d", time.hour()))
+                   .append(s.asprintf("%02d", time.hour()))
                    .append(":")
-                   .append(s.sprintf("%02d", time.minute()))
+                   .append(s.asprintf("%02d", time.minute()))
                    .append(":")
-                   .append(s.sprintf("%02d", time.second()))
+                   .append(s.asprintf("%02d", time.second()))
                    .append(".")
-                   .append(s.sprintf("%03d", time.msec()))
+                   .append(s.asprintf("%03d", time.msec()))
                    .append(" "));
     std::cout << ts.toUtf8().constData() << msg.toUtf8().constData() << std::endl;
 }
 
 /**
- * @brief QtWS::loadTranslation
+ * @brief QtWS::loadTranslation Load translated strings
  * @param app
  */
 void QtWS::loadTranslation(QCoreApplication* app)
@@ -271,7 +271,7 @@ void QtWS::loadTranslation(QCoreApplication* app)
 }
 
 /**
- * @brief QtWS::wsInfo
+ * @brief QtWS::wsInfo Build a message string from a message and additional websocket info.
  * @param msg
  * @param pSocket
  * @return
@@ -290,4 +290,12 @@ QString QtWS::wsInfo(QString msg, QWebSocket* pSocket)
         .append(" ")
         .append(pSocket->requestUrl().toString());
     return message;
+}
+
+/**
+ * @brief QtWS::quitApplication Quit the whole application.
+ */
+void QtWS::quitApplication()
+{
+    QCoreApplication::quit();
 }

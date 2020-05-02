@@ -199,20 +199,23 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             }
         }
     }
-    if (message == BACKBONE_REGISTRATION_MSG) {
-        if (pClient) {
+    if (pClient) {
+        if (message == BACKBONE_REGISTRATION_MSG) {
             m_clients.removeAll(pClient);
             m_backbones.removeAll(pClient);
             m_backbones << pClient;
-            pClient->request().url().setPath("/");
-            pClient->requestUrl().setPath("/");
             LOG(QtWS::getInstance()->wsInfo(
                 tr("Client identified as another server, moving connection to backbone pool: "),
                 pClient));
-        }
-    } else {
-        int ctr = 0, ctr2 = 0;
-        if (pClient) {
+        } else if (message == CHANNEL_LIST_QUERY_MSG) {
+            m_clients.removeAll(pClient);
+            m_backbones.removeAll(pClient);
+            m_backbones << pClient;
+            LOG(QtWS::getInstance()->wsInfo(
+                tr("Client identified as another server, moving connection to backbone pool: "),
+                pClient));
+        } else {
+            int ctr = 0, ctr2 = 0;
             for (int i = 0; i < m_clients.count(); i++) {
                 if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
                     m_clients[i]->sendTextMessage(message);
@@ -228,17 +231,17 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
                     ctr2++;
                 }
             }
+            QString msg;
+            msg.append(tr("Distributing event to "))
+                .append(QString::number(ctr))
+                .append(tr(" clients and "))
+                .append(QString::number(ctr2))
+                .append(tr(" other servers. Channel: "))
+                .append(channel)
+                .append(tr(" Message: "))
+                .append(message);
+            LOG(msg);
         }
-        QString msg;
-        msg.append(tr("Distributing event to "))
-            .append(QString::number(ctr))
-            .append(tr(" clients and "))
-            .append(QString::number(ctr2))
-            .append(tr(" other servers. Channel: "))
-            .append(channel)
-            .append(tr(" Message: "))
-            .append(message);
-        LOG(msg);
     }
     QString msg2;
     msg2.append(tr("Total number of clients: "))
@@ -290,18 +293,25 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     bbMessage.append(message);
     QtWS::getInstance()->gzipCompress(bbMessage.toUtf8(), ba, 9);
     QByteArray cbbMessage(ba);
-    if (message == BACKBONE_REGISTRATION_MSG) {
-        if (pClient) {
+    if (pClient) {
+        if (message == BACKBONE_REGISTRATION_MSG) {
             m_clients.removeAll(pClient);
             m_backbones.removeAll(pClient);
             m_backbones << pClient;
             LOG(QtWS::getInstance()->wsInfo(
                 tr("Client identified as another server, moving connection to backbone pool: "),
                 pClient));
-        }
-    } else {
-        int ctr = 0, ctr2 = 0;
-        if (pClient) {
+        } else if (message == CHANNEL_LIST_QUERY_MSG) {
+            for (int i = 0; i < m_backbones.count(); i++) {
+                if (pClient != m_backbones[i]) {
+                    m_backbones[i]->sendBinaryMessage(CHANNEL_LIST_QUERY_MSG);
+                }
+            }
+            LOG(QtWS::getInstance()->wsInfo(
+                tr("Channel query in progress..."),
+                pClient));
+        } else {
+            int ctr = 0, ctr2 = 0;
             for (int i = 0; i < m_clients.count(); i++) {
                 if (m_clients[i]->request().url().path() == channel) { // && pClient != m_clients[i]
                     m_clients[i]->sendBinaryMessage(cMessage);
@@ -314,17 +324,17 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
                     ctr2++;
                 }
             }
+            QString msg;
+            msg.append(tr("Distributing event to "))
+                .append(QString::number(ctr))
+                .append(tr(" clients and "))
+                .append(QString::number(ctr2))
+                .append(tr(" other servers. Channel: "))
+                .append(channel)
+                .append(tr(" Message: "))
+                .append(message);
+            LOG(msg);
         }
-        QString msg;
-        msg.append(tr("Distributing event to "))
-            .append(QString::number(ctr))
-            .append(tr(" clients and "))
-            .append(QString::number(ctr2))
-            .append(tr(" other servers. Channel: "))
-            .append(channel)
-            .append(tr(" Message: "))
-            .append(message);
-        LOG(msg);
     }
     QString msg2;
     msg2.append(tr("Total number of clients: "))
@@ -364,8 +374,8 @@ void SslEchoServer::onBackboneDisconnected()
     LOG(tr("Backbone disconnected. Restoring connection...."));
     bbResetTimer.stop();
     m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
-    QTimer* timer = new QTimer(this);
-    timer->singleShot(1000, this, SLOT(restoreBackboneConnection()));
+    QTimer timer(this);
+    timer.singleShot(1000, this, SLOT(restoreBackboneConnection()));
 }
 
 /**
@@ -385,7 +395,8 @@ void SslEchoServer::restoreBackboneConnection()
  */
 void SslEchoServer::resetBackboneConnection()
 {
-    LOG(tr("Doing a full restart...."));
+    LOG(tr("Preparing for a full restart...."));
+    QtWS::getInstance()->stopKeepAliveTimer();
     QtWS::getInstance()->m_pWebSocketBackbone->disconnect();
     QtWS::getInstance()->m_pWebSocketBackbone->close();
     m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
@@ -393,16 +404,19 @@ void SslEchoServer::resetBackboneConnection()
     delete QtWS::getInstance()->m_pWebSocketBackbone;
 
     for (int i = 0; i < m_backbones.count(); i++) {
-        m_backbones.at(i)->close();
+        if (m_backbones.at(i) != nullptr)
+            m_backbones.at(i)->close();
     }
     for (int i = 0; i < m_clients.count(); i++) {
-        m_clients.at(i)->close();
+        if (m_clients.at(i) != nullptr)
+            m_clients.at(i)->close();
     }
 
     QtWS::getInstance()->m_pWebSocketServer->close();
     QtWS::getInstance()->m_pWebSocketServerSSL->close();
 
-    QCoreApplication::quit();
+    QTimer quitTimer(this);
+    quitTimer.singleShot(1000, QtWS::getInstance(), SLOT(quitApplication()));
 }
 
 /**

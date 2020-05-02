@@ -57,7 +57,7 @@
     </message>
     <message>
         <source>Doing a full restart....</source>
-        <translation>Mache einen kompletten Neustart....</translation>
+        <translation type="vanished">Mache einen kompletten Neustart....</translation>
     </message>
     <message>
         <source>Distributing event to </source>
@@ -90,6 +90,14 @@
     <message>
         <source>PONG </source>
         <translation>PONG </translation>
+    </message>
+    <message>
+        <source>Channel query in progress...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preparing for a full restart....</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
