@@ -297,5 +297,6 @@ QString QtWS::wsInfo(QString msg, QWebSocket* pSocket)
  */
 void QtWS::quitApplication()
 {
+    LOG(tr("Exiting process..."));
     QCoreApplication::quit();
 }

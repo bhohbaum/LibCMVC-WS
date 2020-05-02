@@ -15,5 +15,9 @@
         <source>One or more SSL errors occurred:</source>
         <translation>Ein oder mehr SSL-Fehler sind aufgetreten:</translation>
     </message>
+    <message>
+        <source>Exiting process...</source>
+        <translation>Beende den Prozess...</translation>
+    </message>
 </context>
 </TS>
