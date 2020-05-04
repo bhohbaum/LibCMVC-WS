@@ -35,24 +35,8 @@
 <context>
     <name>WsMetaData</name>
     <message>
-        <source>Adding new MetaData element to list.</source>
-        <translation type="vanished">Füge neues Metadaten-Element der Liste hinzu.</translation>
-    </message>
-    <message>
-        <source>Removing old MetaData element from list.</source>
-        <translation type="vanished">Entferne altes Metadaten-Element aus der Liste.</translation>
-    </message>
-    <message>
-        <source>Current channel list for this connection: </source>
-        <translation type="vanished">Aktuelle Kanalliste für diese Verbindung: </translation>
-    </message>
-    <message>
-        <source>This is a backbone socket. Sending channel list notification: </source>
-        <translation type="vanished">Dies ist eine Backbone-Verbindung. Sende Nachricht mit aktueller Kanalliste: </translation>
-    </message>
-    <message>
         <source>Channel list changed for this connnection: </source>
-        <translation type="unfinished"></translation>
+        <translation>Die Kanalliste dieser Verbindung hat sich geändert: </translation>
     </message>
 </context>
 </TS>

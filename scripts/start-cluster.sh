@@ -10,7 +10,7 @@ do
 		do
 			for D in `seq 0 9`
 			do
-				CMD="qtwsserver -p 1$A$B$C$D -k /home/botho/git/LibCMVC-WS/qtwsserver/localhost.key -c /home/botho/git/LibCMVC-WS/qtwsserver/localhost.cert -s 2$A$B$C$D -b ws://localhost:8888"
+				CMD="qtwsserver -p 1$A$B$C$D -s 2$A$B$C$D -b ws://localhost:8888"
 				echo "$CMD"
 				$CMD &
 			done
