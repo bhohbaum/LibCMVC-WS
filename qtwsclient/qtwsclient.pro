@@ -21,6 +21,8 @@ TRANSLATIONS += \
 
 LIBS += -L../qtws/ -lqtws -lz
 
+DISTFILES += ../qtws/libqtws.a
+
 target.path = /usr/local/bin
 INSTALLS += target
 
