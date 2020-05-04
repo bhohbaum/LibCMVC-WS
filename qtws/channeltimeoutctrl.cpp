@@ -1,4 +1,5 @@
 #include "channeltimeoutctrl.h"
+#include "qtws.h"
 #include "vanishingchannelentry.h"
 
 ChannelTimeoutCtrl::ChannelTimeoutCtrl(QObject* parent)
@@ -15,9 +16,10 @@ void ChannelTimeoutCtrl::addChannel(QString channel)
             m_channels.at(i)->deleteLater();
         }
     }
-    VanishingChannelEntry* vet = new VanishingChannelEntry();
+    VanishingChannelEntry* vet = new VanishingChannelEntry(this);
     vet->setController(this);
     vet->channelName = channel;
+    emit QtWS::getInstance()->updateChannels();
 }
 
 QStringList ChannelTimeoutCtrl::getBufferedChannels()

@@ -73,15 +73,16 @@ QStringList WsMetaData::calcChannelsForConnection()
         }
     }
     tmpWmd.addChannels(QtWS::getInstance()->m_channelTimeoutCtrl.getBufferedChannels());
-    tmpWmd.getChannels().sort(Qt::CaseSensitivity::CaseSensitive);
-    return tmpWmd.getChannels();
+    QStringList ret = tmpWmd.getChannels();
+    ret.sort(Qt::CaseSensitivity::CaseSensitive);
+    return ret;
 }
 
 void WsMetaData::updateChannelAnnouncement()
 {
     if (isBackboneSocket()) {
         QStringList newChannelsArr = calcChannelsForConnection();
-        QString newChannelsMsg = newChannelsArr.join(" ");
+        QString newChannelsMsg = newChannelsArr.join(" ").trimmed();
         if (newChannelsMsg != oldChannelListString) {
             oldChannelListString = newChannelsMsg;
             newChannelsMsg.prepend(" ").prepend(CHANNEL_LIST_NOTIFICATION);

@@ -1,4 +1,5 @@
 #include "vanishingchannelentry.h"
+#include "qtws.h"
 
 #include <QTimer>
 
@@ -12,6 +13,7 @@ VanishingChannelEntry::VanishingChannelEntry(QObject* parent)
 VanishingChannelEntry::~VanishingChannelEntry()
 {
     m_controller->m_channels.removeAll(this);
+    emit QtWS::getInstance()->updateChannels();
 }
 
 void VanishingChannelEntry::setController(ChannelTimeoutCtrl* controller)
