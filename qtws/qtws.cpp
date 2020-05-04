@@ -346,10 +346,7 @@ void QtWS::handleBackboneRegistration(QWebSocket* pClient)
     m_clients.removeAll(pClient);
     m_backbones.removeAll(pClient);
     m_backbones << pClient;
-    //findMetaDataByWebSocket(pClient)->updateChannelAnnouncement();
     emit updateChannels();
-    //emit forceUpdateChannels();
-
     QString bbMessage("/bb-event");
     bbMessage.append("\n");
     bbMessage.append(CHANNEL_LIST_REQUEST);
