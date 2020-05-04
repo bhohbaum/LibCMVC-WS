@@ -73,6 +73,10 @@ QStringList WsMetaData::calcChannelsForConnection()
             tmpWmd.addChannels(QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels());
         }
     }
+    for (int i = 0; i < QtWS::getInstance()->m_clients.length(); i++) {
+        tmpWmd.addChannel(
+            QtWS::getInstance()->getChannelFromSocket(QtWS::getInstance()->m_clients.at(i)));
+    }
     tmpWmd.addChannels(QtWS::getInstance()->m_channelTimeoutCtrl.getBufferedChannels());
     QStringList ret = tmpWmd.getChannels();
     ret.sort(Qt::CaseSensitivity::CaseSensitive);

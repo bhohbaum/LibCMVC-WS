@@ -32,6 +32,7 @@
 
 constexpr char BACKBONE_REGISTRATION_MSG[32] = "___BACKBONE_REGISTRATION_MSG___";
 constexpr char CHANNEL_LIST_NOTIFICATION[32] = "___CHANNEL_LIST_NOTIFICATION___";
+constexpr char CHANNEL_LIST_REQUEST[27] = "___CHANNEL_LIST_REQUEST___";
 
 class QtWS : public QObject {
     Q_OBJECT

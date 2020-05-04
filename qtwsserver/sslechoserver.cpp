@@ -219,6 +219,8 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             QtWS::getInstance()->handleBackboneRegistration(pClient);
         } else if (message.startsWith(CHANNEL_LIST_NOTIFICATION)) {
             QtWS::getInstance()->handleChannelListNotification(message, pClient);
+        } else if (message.startsWith(CHANNEL_LIST_REQUEST)) {
+            QtWS::getInstance()->forceUpdateChannels();
         } else {
             int ctr = 0, ctr2 = 0;
             for (int i = 0; i < QtWS::getInstance()->m_clients.count(); i++) {
@@ -301,6 +303,8 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
             QtWS::getInstance()->handleBackboneRegistration(pClient);
         } else if (message.startsWith(CHANNEL_LIST_NOTIFICATION)) {
             QtWS::getInstance()->handleChannelListNotification(message, pClient);
+        } else if (message.startsWith(CHANNEL_LIST_REQUEST)) {
+            QtWS::getInstance()->forceUpdateChannels();
         } else {
             int ctr = 0, ctr2 = 0;
             for (int i = 0; i < QtWS::getInstance()->m_clients.count(); i++) {
@@ -314,7 +318,7 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
                     WsMetaData* wmd = QtWS::getInstance()->findMetaDataByWebSocket(
                         QtWS::getInstance()->m_backbones[i]);
                     if (wmd->getChannels().contains(channel)) {
-                        QtWS::getInstance()->m_backbones[i]->sendTextMessage(bbMessage);
+                        QtWS::getInstance()->m_backbones[i]->sendBinaryMessage(cbbMessage);
                         ctr2++;
                     }
                 }
