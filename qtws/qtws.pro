@@ -1,3 +1,4 @@
+
 QT -= gui
 
 TEMPLATE = lib
@@ -8,11 +9,15 @@ CONFIG += c++11
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
+	channeltimeoutctrl.cpp \
 	qtws.cpp \
+	vanishingchannelentry.cpp \
 	wsmetadata.cpp
 
 HEADERS += \
+	channeltimeoutctrl.h \
 	qtws.h \
+	vanishingchannelentry.h \
 	wsmetadata.h
 
 TRANSLATIONS += \

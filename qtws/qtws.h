@@ -15,9 +15,16 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#include "channeltimeoutctrl.h"
 #include "wsmetadata.h"
 
+//#define DEBUG
+
+#ifdef DEBUG
+#define LOG(msg) QtWS::getInstance()->log(QString(msg).prepend(" ").prepend(QString::number(__LINE__)).prepend(" ").prepend(__FILE__));
+#else
 #define LOG(msg) QtWS::getInstance()->log(msg);
+#endif
 
 #define GZIP_WINDOWS_BIT 15 + 16 // gzip only decoding
 #define GZIP_OR_ZLIB_WIN_BIT 15 + 32 // auto zlib or gzip decoding
@@ -43,6 +50,7 @@ public:
     QList<QWebSocket*> m_backbones;
 
     QList<WsMetaData*> m_wsMetaDataList;
+    ChannelTimeoutCtrl m_channelTimeoutCtrl;
 
 public slots:
     bool gzipCompress(QByteArray input, QByteArray& output, int level = -1);
@@ -65,6 +73,9 @@ public slots:
     void handleChannelListNotification(QString message, QWebSocket* pClient);
     QString getChannelFromSocket(QWebSocket* pSocket);
     bool getChannelFromMessage(QString* message, QString* channel);
+
+signals:
+    void updateChannels();
 
 private:
     QtWS();

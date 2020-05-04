@@ -4,13 +4,13 @@
 WsMetaData::WsMetaData(QObject* parent)
     : QObject(parent)
 {
-    LOG(tr("Adding new MetaData element to list."));
     QtWS::getInstance()->m_wsMetaDataList.append(this);
+    clearChannels();
+    connect(QtWS::getInstance(), SIGNAL(updateChannels()), this, SLOT(updateChannelAnnouncement()));
 }
 
 WsMetaData::~WsMetaData()
 {
-    LOG(tr("Removing old MetaData element from list."));
     QtWS::getInstance()->m_wsMetaDataList.removeAll(this);
 }
 
@@ -22,15 +22,21 @@ void WsMetaData::clearChannels()
 void WsMetaData::addChannels(QStringList channels)
 {
     for (int i = 0; i < channels.length(); i++) {
-        if (!m_channels.contains(channels.at(i)))
-            m_channels.append(channels.at(i));
+        if (!m_channels.contains(channels.at(i))) {
+            if (isValidChannelName(channels.at(i))) {
+                m_channels.append(channels.at(i));
+            }
+        }
     }
 }
 
 void WsMetaData::addChannel(QString channel)
 {
-    if (!m_channels.contains(channel))
-        m_channels.append(channel);
+    if (!m_channels.contains(channel)) {
+        if (isValidChannelName(channel)) {
+            m_channels.append(channel);
+        }
+    }
 }
 
 QStringList WsMetaData::getChannels()
@@ -56,4 +62,42 @@ bool WsMetaData::isBackboneSocket()
 bool WsMetaData::isClientSocket()
 {
     return QtWS::getInstance()->m_clients.contains(getWebSocket());
+}
+
+QStringList WsMetaData::calcChannelsForConnection()
+{
+    WsMetaData tmpWmd;
+    for (int i = 0; i < QtWS::getInstance()->m_wsMetaDataList.length(); i++) {
+        if (QtWS::getInstance()->m_wsMetaDataList.at(i) != this) {
+            tmpWmd.addChannels(QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels());
+        }
+    }
+    tmpWmd.addChannels(QtWS::getInstance()->m_channelTimeoutCtrl.getBufferedChannels());
+    tmpWmd.getChannels().sort(Qt::CaseSensitivity::CaseSensitive);
+    return tmpWmd.getChannels();
+}
+
+void WsMetaData::updateChannelAnnouncement()
+{
+    if (isBackboneSocket()) {
+        QStringList newChannelsArr = calcChannelsForConnection();
+        QString newChannelsMsg = newChannelsArr.join(" ");
+        if (newChannelsMsg != oldChannelListString) {
+            oldChannelListString = newChannelsMsg;
+            newChannelsMsg.prepend(" ").prepend(CHANNEL_LIST_NOTIFICATION);
+            QString bbMessage("/bb-event");
+            bbMessage.append("\n");
+            bbMessage.append(newChannelsMsg);
+            getWebSocket()->sendTextMessage(bbMessage);
+            LOG(QtWS::getInstance()
+                    ->wsInfo(tr("Channel list changed for this connnection: "), getWebSocket())
+                    .append(": ")
+                    .append(oldChannelListString));
+        }
+    }
+}
+
+bool WsMetaData::isValidChannelName(QString name)
+{
+    return name != BACKBONE_REGISTRATION_MSG && name != CHANNEL_LIST_NOTIFICATION && name != "/";
 }

@@ -7,6 +7,11 @@ SUBDIRS = \
 
 CONFIG += ordered
 
+
+OTHER_FILES = \
+$$files(./scripts/*) \
+
+
 # do a static build if we are parsed by a statically built qmake
 contains(CONFIG, "shared"): {
 	message("Qt linking: dynamic")
@@ -15,3 +20,6 @@ contains(CONFIG, "shared"): {
 	CONFIG += static
 }
 
+contains(CONFIG, "debug"): {
+	DEFINES += DEBUG
+}

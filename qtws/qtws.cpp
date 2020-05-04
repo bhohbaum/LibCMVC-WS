@@ -307,7 +307,10 @@ WsMetaData* QtWS::findMetaDataByWebSocket(QWebSocket* pSocket)
         if (m_wsMetaDataList.at(i)->getWebSocket() == pSocket)
             return m_wsMetaDataList.at(i);
     }
-    return nullptr;
+    WsMetaData* wmd;
+    wmd = new WsMetaData(pSocket);
+    wmd->setWebSocket(pSocket);
+    return wmd;
 }
 
 QString QtWS::buildChannelListString(QStringList wmd)
@@ -338,11 +341,13 @@ QStringList QtWS::buildChannelListArray(QString channels)
 
 void QtWS::handleBackboneRegistration(QWebSocket* pClient)
 {
-    QtWS::getInstance()->m_clients.removeAll(pClient);
-    QtWS::getInstance()->m_backbones.removeAll(pClient);
-    QtWS::getInstance()->m_backbones << pClient;
-    LOG(QtWS::getInstance()->wsInfo(
+    LOG(wsInfo(
         tr("Client identified as another server, moving connection to backbone pool: "), pClient));
+    m_clients.removeAll(pClient);
+    m_backbones.removeAll(pClient);
+    m_backbones << pClient;
+    //findMetaDataByWebSocket(pClient)->updateChannelAnnouncement();
+    emit updateChannels();
 }
 
 void QtWS::handleChannelListNotification(QString message, QWebSocket* pClient)
@@ -355,6 +360,7 @@ void QtWS::handleChannelListNotification(QString message, QWebSocket* pClient)
     wmd->addChannels(arr);
     QString str(tr("Channels: "));
     LOG(str.append(buildChannelListString(arr)));
+    emit updateChannels();
 }
 
 QString QtWS::getChannelFromSocket(QWebSocket* pSocket)
@@ -370,4 +376,5 @@ bool QtWS::getChannelFromMessage(QString* message, QString* channel)
     arr.pop_front();
     msg = arr.join("\n");
     *message = msg.toUtf8();
+    return arr.length() > 0;
 }

@@ -140,16 +140,17 @@ void SslEchoServer::onNewConnection()
     while (pSocket != nullptr) {
         LOG(QtWS::getInstance()->wsInfo(tr("PLAIN Client connected: "), pSocket));
         wmd = QtWS::getInstance()->findMetaDataByWebSocket(pSocket);
-        if (wmd == nullptr)
-            wmd = new WsMetaData(this);
-        wmd->setWebSocket(pSocket);
         wmd->clearChannels();
         wmd->addChannel(QtWS::getInstance()->getChannelFromSocket(pSocket));
         connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
-        connect(pSocket, &QWebSocket::binaryMessageReceived, this, &SslEchoServer::processBinaryMessage);
+        connect(pSocket,
+            &QWebSocket::binaryMessageReceived,
+            this,
+            &SslEchoServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &SslEchoServer::socketDisconnected);
         QtWS::getInstance()->m_clients.removeAll(pSocket);
         QtWS::getInstance()->m_clients << pSocket;
+        emit QtWS::getInstance()->updateChannels();
         pSocket = QtWS::getInstance()->m_pWebSocketServer->nextPendingConnection();
     }
 }
@@ -166,9 +167,6 @@ void SslEchoServer::onNewSSLConnection()
     while (pSocket != nullptr) {
         LOG(QtWS::getInstance()->wsInfo(tr("SSL Client connected: "), pSocket));
         wmd = QtWS::getInstance()->findMetaDataByWebSocket(pSocket);
-        if (wmd == nullptr)
-            wmd = new WsMetaData(this);
-        wmd->setWebSocket(pSocket);
         wmd->clearChannels();
         wmd->addChannel(QtWS::getInstance()->getChannelFromSocket(pSocket));
         connect(pSocket, &QWebSocket::textMessageReceived, this, &SslEchoServer::processTextMessage);
@@ -183,6 +181,7 @@ void SslEchoServer::onNewSSLConnection()
             &QtWS::onSslErrors);
         QtWS::getInstance()->m_clients.removeAll(pSocket);
         QtWS::getInstance()->m_clients << pSocket;
+        emit QtWS::getInstance()->updateChannels();
         pSocket = QtWS::getInstance()->m_pWebSocketServerSSL->nextPendingConnection();
     }
 }
@@ -230,8 +229,12 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             }
             for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
                 if (pClient != QtWS::getInstance()->m_backbones[i]) {
-                    QtWS::getInstance()->m_backbones[i]->sendTextMessage(bbMessage);
-                    ctr2++;
+                    WsMetaData* wmd = QtWS::getInstance()->findMetaDataByWebSocket(
+                        QtWS::getInstance()->m_backbones[i]);
+                    if (wmd->getChannels().contains(channel)) {
+                        QtWS::getInstance()->m_backbones[i]->sendTextMessage(bbMessage);
+                        ctr2++;
+                    }
                 }
             }
             QString msg;
@@ -308,8 +311,12 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
             }
             for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
                 if (pClient != QtWS::getInstance()->m_backbones[i]) {
-                    QtWS::getInstance()->m_backbones[i]->sendBinaryMessage(cbbMessage);
-                    ctr2++;
+                    WsMetaData* wmd = QtWS::getInstance()->findMetaDataByWebSocket(
+                        QtWS::getInstance()->m_backbones[i]);
+                    if (wmd->getChannels().contains(channel)) {
+                        QtWS::getInstance()->m_backbones[i]->sendTextMessage(bbMessage);
+                        ctr2++;
+                    }
                 }
             }
             QString msg;
@@ -340,6 +347,10 @@ void SslEchoServer::socketDisconnected()
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     LOG(QtWS::getInstance()->wsInfo(tr("Client disconnected: "), pClient));
     WsMetaData* wsm = QtWS::getInstance()->findMetaDataByWebSocket(pClient);
+    if (wsm->isClientSocket()) {
+        QtWS::getInstance()->m_channelTimeoutCtrl.addChannel(
+            QtWS::getInstance()->getChannelFromSocket(pClient));
+    }
     if (wsm) {
         QtWS::getInstance()->m_wsMetaDataList.removeAll(wsm);
         wsm->deleteLater();
@@ -349,6 +360,7 @@ void SslEchoServer::socketDisconnected()
         QtWS::getInstance()->m_backbones.removeAll(pClient);
         pClient->deleteLater();
     }
+    //emit QtWS::getInstance()->updateChannels();
 }
 
 /**
