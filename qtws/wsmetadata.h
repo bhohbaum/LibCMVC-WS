@@ -26,6 +26,7 @@ public slots:
     bool isClientSocket();
     QStringList calcChannelsForConnection();
     void updateChannelAnnouncement();
+    void forceChannelAnnouncement();
     bool isValidChannelName(QString name);
 
 signals:

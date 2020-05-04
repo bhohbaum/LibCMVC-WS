@@ -348,6 +348,7 @@ void QtWS::handleBackboneRegistration(QWebSocket* pClient)
     m_backbones << pClient;
     //findMetaDataByWebSocket(pClient)->updateChannelAnnouncement();
     emit updateChannels();
+    //emit forceUpdateChannels();
 }
 
 void QtWS::handleChannelListNotification(QString message, QWebSocket* pClient)

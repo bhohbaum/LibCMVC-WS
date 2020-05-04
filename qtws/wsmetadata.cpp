@@ -7,6 +7,7 @@ WsMetaData::WsMetaData(QObject* parent)
     QtWS::getInstance()->m_wsMetaDataList.append(this);
     clearChannels();
     connect(QtWS::getInstance(), SIGNAL(updateChannels()), this, SLOT(updateChannelAnnouncement()));
+    connect(QtWS::getInstance(), SIGNAL(forceUpdateChannels()), this, SLOT(forceChannelAnnouncement()));
 }
 
 WsMetaData::~WsMetaData()
@@ -96,6 +97,12 @@ void WsMetaData::updateChannelAnnouncement()
                     .append(oldChannelListString));
         }
     }
+}
+
+void WsMetaData::forceChannelAnnouncement()
+{
+    oldChannelListString = " /// ";
+    updateChannelAnnouncement();
 }
 
 bool WsMetaData::isValidChannelName(QString name)

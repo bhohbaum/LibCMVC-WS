@@ -76,6 +76,7 @@ public slots:
 
 signals:
     void updateChannels();
+    void forceUpdateChannels();
 
 private:
     QtWS();
