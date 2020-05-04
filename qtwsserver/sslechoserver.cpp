@@ -364,7 +364,6 @@ void SslEchoServer::socketDisconnected()
         QtWS::getInstance()->m_backbones.removeAll(pClient);
         pClient->deleteLater();
     }
-    //emit QtWS::getInstance()->updateChannels();
 }
 
 /**
