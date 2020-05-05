@@ -4,13 +4,10 @@ SUBDIRS = \
 	qtwsclient \
 	qtwsserver \
 
-
 CONFIG += ordered
 
-
 OTHER_FILES = \
-$$files(./scripts/*) \
-
+	$$files(./scripts/*) \
 
 # do a static build if we are parsed by a statically built qmake
 contains(CONFIG, "shared"): {

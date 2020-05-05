@@ -14,7 +14,7 @@ public:
     explicit VanishingChannelEntry(QObject* parent = nullptr);
     ~VanishingChannelEntry();
 
-    QString channelName;
+    QString m_channelName;
 
 public slots:
     void setController(ChannelTimeoutCtrl* controller);

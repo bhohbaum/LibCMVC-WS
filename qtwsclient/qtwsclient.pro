@@ -8,12 +8,10 @@ CONFIG += app_bundle
 TEMPLATE = app
 
 SOURCES += \
-	main.cpp \
-	echoclient.cpp \
-
+	$$files(*.cpp) \
 
 HEADERS += \
-	echoclient.h \
+	$$files(*.h) \
 	../qtws/qtws.h \
 
 TRANSLATIONS += \

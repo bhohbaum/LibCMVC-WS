@@ -10,8 +10,8 @@ QtWS::QtWS()
     Q_INIT_RESOURCE(qtws);
 
     m_pWebSocketBackbone = new QWebSocket();
-    keepaliveTimer.setInterval(1000);
-    connect(&keepaliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePing()));
+    m_keepaliveTimer.setInterval(1000);
+    connect(&m_keepaliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePing()));
 
     startBackboneWatchdog();
 }
@@ -198,7 +198,7 @@ void QtWS::sendKeepAlivePing()
  */
 void QtWS::startKeepAliveTimer()
 {
-    keepaliveTimer.start();
+    m_keepaliveTimer.start();
 }
 
 /**
@@ -206,7 +206,7 @@ void QtWS::startKeepAliveTimer()
  */
 void QtWS::stopKeepAliveTimer()
 {
-    keepaliveTimer.stop();
+    m_keepaliveTimer.stop();
 }
 
 /**
@@ -260,14 +260,14 @@ void QtWS::loadTranslation(QCoreApplication* app)
         .append(QLocale::system().name().split("_").at(0))
         .append(".qm");
 
-    qtTranslator.load(QLocale::system(), QStringLiteral("qtbase_"));
-    qtTranslatorLib.load(trFileLib);
-    qtTranslatorClient.load(trFileClient);
-    qtTranslatorServer.load(trFileServer);
+    m_qtTranslator.load(QLocale::system(), QStringLiteral("qtbase_"));
+    m_qtTranslatorLib.load(trFileLib);
+    m_qtTranslatorClient.load(trFileClient);
+    m_qtTranslatorServer.load(trFileServer);
 
-    app->installTranslator(&qtTranslatorLib);
-    app->installTranslator(&qtTranslatorClient);
-    app->installTranslator(&qtTranslatorServer);
+    app->installTranslator(&m_qtTranslatorLib);
+    app->installTranslator(&m_qtTranslatorClient);
+    app->installTranslator(&m_qtTranslatorServer);
 }
 
 /**

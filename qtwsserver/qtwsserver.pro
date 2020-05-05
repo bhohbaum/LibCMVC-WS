@@ -8,12 +8,10 @@ CONFIG += app_bundle
 TEMPLATE = app
 
 SOURCES += \
-	main.cpp \
-	sslechoserver.cpp \
-
+	$$files(*.cpp) \
 
 HEADERS += \
-	sslechoserver.h \
+	$$files(*.h) \
 	../qtws/qtws.h \
 
 TRANSLATIONS += \

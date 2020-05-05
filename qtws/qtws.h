@@ -82,8 +82,8 @@ signals:
 private:
     QtWS();
 
-    QTimer keepaliveTimer;
-    QTranslator qtTranslator, qtTranslatorLib, qtTranslatorClient, qtTranslatorServer;
+    QTimer m_keepaliveTimer;
+    QTranslator m_qtTranslator, m_qtTranslatorLib, m_qtTranslatorClient, m_qtTranslatorServer;
 };
 
 #endif // QTWS_H

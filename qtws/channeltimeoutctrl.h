@@ -3,8 +3,6 @@
 
 #include <QObject>
 
-//#include "vanishingchannelentry.h"
-
 QT_FORWARD_DECLARE_CLASS(VanishingChannelEntry)
 
 class ChannelTimeoutCtrl : public QObject {
