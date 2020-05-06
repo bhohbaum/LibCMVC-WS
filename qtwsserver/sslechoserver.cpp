@@ -3,6 +3,7 @@
 #include "QtWebSockets/QWebSocketServer"
 #include <QDataStream>
 #include <QJsonObject>
+#include <QRandomGenerator>
 #include <QThread>
 #include <QTimer>
 #include <QtCore/QDebug>
@@ -203,6 +204,48 @@ void SslEchoServer::processTextMessage(QString message)
 void SslEchoServer::__processTextMessage(QString message, QString channel)
 {
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
+    QString messageID = "";
+    if (message.startsWith(MESSAGE_ID_TOKEN)) {
+        QtWS::getInstance()->getChannelFromMessage(&message, &messageID);
+    } else {
+        QString s;
+        QDate date(QDate::currentDate());
+        QTime time(QTime::currentTime());
+        QString ts(QString::number(date.year())
+                       .append(":")
+                       .append(s.asprintf("%02d", date.month()))
+                       .append(":")
+                       .append(s.asprintf("%02d", date.day()))
+                       .append(" ")
+                       .append(s.asprintf("%02d", time.hour()))
+                       .append(":")
+                       .append(s.asprintf("%02d", time.minute()))
+                       .append(":")
+                       .append(s.asprintf("%02d", time.second()))
+                       .append(".")
+                       .append(s.asprintf("%03d", time.msec()))
+                       .append(" ")
+                       .append(message)
+                       .append(" ")
+                       .append(QString::number(QRandomGenerator::global()->generate())));
+        messageID = QString(MESSAGE_ID_TOKEN)
+                        .append(QCryptographicHash::hash(ts.toUtf8(),
+                            QCryptographicHash::Algorithm::Md5)
+                                    .toHex());
+    }
+    LOG(tr("Message ID: ").append(messageID));
+    if (m_messageHashes.contains(messageID)) {
+        m_messageHashes.removeAll(messageID);
+        m_messageHashes.append(messageID);
+        //if (QtWS::getInstance()->findMetaDataByWebSocket(pClient)->isBackboneSocket()) {
+        LOG(tr("Message is a duplicate, ignoring it! ID: ").append(messageID));
+        return;
+        //}
+    }
+    m_messageHashes.append(messageID);
+    while (m_messageHashes.length() > 10000) {
+        m_messageHashes.pop_front();
+    }
     channel = (channel == "") ? QtWS::getInstance()->getChannelFromSocket(pClient) : channel;
     if (channel == "/") {
         for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
@@ -211,7 +254,9 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             }
         }
     }
-    QString bbMessage(channel);
+    QString bbMessage(messageID);
+    bbMessage.append("\n");
+    bbMessage.append(channel);
     bbMessage.append("\n");
     bbMessage.append(message);
     if (pClient) {
@@ -283,6 +328,49 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
         msg = ba;
         message = ba;
     }
+    QString messageID = "";
+    if (message.startsWith(MESSAGE_ID_TOKEN)) {
+        QtWS::getInstance()->getChannelFromMessage(&msg, &messageID);
+        message = msg.toUtf8();
+    } else {
+        QString s;
+        QDate date(QDate::currentDate());
+        QTime time(QTime::currentTime());
+        QString ts(QString::number(date.year())
+                       .append(":")
+                       .append(s.asprintf("%02d", date.month()))
+                       .append(":")
+                       .append(s.asprintf("%02d", date.day()))
+                       .append(" ")
+                       .append(s.asprintf("%02d", time.hour()))
+                       .append(":")
+                       .append(s.asprintf("%02d", time.minute()))
+                       .append(":")
+                       .append(s.asprintf("%02d", time.second()))
+                       .append(".")
+                       .append(s.asprintf("%03d", time.msec()))
+                       .append(" ")
+                       .append(message)
+                       .append(" ")
+                       .append(QString::number(QRandomGenerator::global()->generate())));
+        messageID = QString(MESSAGE_ID_TOKEN)
+                        .append(QCryptographicHash::hash(ts.toUtf8(),
+                            QCryptographicHash::Algorithm::Md5)
+                                    .toHex());
+    }
+    LOG(tr("Message ID: ").append(messageID));
+    if (m_messageHashes.contains(messageID)) {
+        m_messageHashes.removeAll(messageID);
+        m_messageHashes.append(messageID);
+        //if (QtWS::getInstance()->findMetaDataByWebSocket(pClient)->isBackboneSocket()) {
+        LOG(tr("Message is a duplicate, ignoring it! ID: ").append(messageID));
+        return;
+        //}
+    }
+    m_messageHashes.append(messageID);
+    while (m_messageHashes.length() > 10000) {
+        m_messageHashes.pop_front();
+    }
     if (channel == "/") {
         for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
             if (pClient == QtWS::getInstance()->m_backbones[i]) {
@@ -293,7 +381,9 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     }
     QtWS::getInstance()->gzipCompress(message, ba, 9);
     QByteArray cMessage(ba);
-    QString bbMessage(channel);
+    QString bbMessage(messageID);
+    bbMessage.append("\n");
+    bbMessage.append(channel);
     bbMessage.append("\n");
     bbMessage.append(message);
     QtWS::getInstance()->gzipCompress(bbMessage.toUtf8(), ba, 9);

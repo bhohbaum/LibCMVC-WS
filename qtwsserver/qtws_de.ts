@@ -87,5 +87,13 @@
         <source>Preparing for a full restart....</source>
         <translation>Bereite einen kompletten Neustart der Anwendung vor....</translation>
     </message>
+    <message>
+        <source>Message ID: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Message is a duplicate, ignoring it! ID: </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>

@@ -40,6 +40,7 @@ private:
     QMap<QString, QList<QWebSocket*>> m_channels;
     QTimer bbResetTimer;
     QString m_sBackbone = "";
+    QStringList m_messageHashes;
 };
 
 #endif //SSLECHOSERVER_H

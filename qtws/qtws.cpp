@@ -12,7 +12,6 @@ QtWS::QtWS()
     m_pWebSocketBackbone = new QWebSocket();
     m_keepaliveTimer.setInterval(1000);
     connect(&m_keepaliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePing()));
-
     startBackboneWatchdog();
 }
 
