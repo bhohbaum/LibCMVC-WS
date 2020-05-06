@@ -7,7 +7,7 @@ VanishingChannelEntry::VanishingChannelEntry(QObject* parent)
     : QObject(parent)
 {
     QTimer timer(this);
-    timer.singleShot(5000, this, SLOT(vanish()));
+    timer.singleShot(20000, this, SLOT(vanish()));
 }
 
 VanishingChannelEntry::~VanishingChannelEntry()
