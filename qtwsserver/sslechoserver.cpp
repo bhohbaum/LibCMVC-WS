@@ -114,7 +114,7 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
             &SslEchoServer::resetBackboneResetTimer);
         QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
         QtWS::getInstance()->m_backbones.append(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
-        bbResetTimer.setInterval(3500);
+        bbResetTimer.setInterval(60000);
         connect(&bbResetTimer, SIGNAL(timeout()), this, SLOT(resetBackboneConnection()));
         bbResetTimer.start();
     }
