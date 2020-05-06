@@ -9,7 +9,7 @@ QtWS::QtWS()
 {
     Q_INIT_RESOURCE(qtws);
 
-    m_pWebSocketBackbone = new QWebSocket();
+    m_pWebSocketBackbone[0] = new QWebSocket();
     m_keepaliveTimer.setInterval(1000);
     connect(&m_keepaliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePing()));
     startBackboneWatchdog();
@@ -167,6 +167,7 @@ QString QtWS::secureBackboneUrl(QString url)
  */
 void QtWS::onSslErrors(const QList<QSslError>& errors)
 {
+    QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     QString str(tr("One or more SSL errors occurred:"));
     str.append("\n");
     for (int i = 0; i < errors.length(); i++) {
@@ -178,7 +179,7 @@ void QtWS::onSslErrors(const QList<QSslError>& errors)
     LOG(str);
     LOG(tr("Trying to ignore the error(s) and go on...."));
 
-    m_pWebSocketBackbone->ignoreSslErrors();
+    pClient->ignoreSslErrors();
 }
 
 /**
@@ -186,9 +187,11 @@ void QtWS::onSslErrors(const QList<QSslError>& errors)
  */
 void QtWS::sendKeepAlivePing()
 {
-    LOG(wsInfo(tr("PING "), m_pWebSocketBackbone));
-    if (m_pWebSocketBackbone->state() == QAbstractSocket::SocketState::ConnectedState) {
-        m_pWebSocketBackbone->ping();
+    for (int i = 0; i < m_pWebSocketBackbone.count(); i++) {
+        LOG(wsInfo(tr("PING "), m_pWebSocketBackbone.at(i)));
+        if (m_pWebSocketBackbone.at(i)->state() == QAbstractSocket::SocketState::ConnectedState) {
+            m_pWebSocketBackbone.at(i)->ping();
+        }
     }
 }
 
@@ -213,8 +216,10 @@ void QtWS::stopKeepAliveTimer()
  */
 void QtWS::startBackboneWatchdog()
 {
-    connect(m_pWebSocketBackbone, SIGNAL(connected()), this, SLOT(startKeepAliveTimer()));
-    connect(m_pWebSocketBackbone, SIGNAL(disconnected()), this, SLOT(stopKeepAliveTimer()));
+    for (int i = 0; i < m_pWebSocketBackbone.count(); i++) {
+        connect(m_pWebSocketBackbone.at(i), SIGNAL(connected()), this, SLOT(startKeepAliveTimer()));
+        connect(m_pWebSocketBackbone.at(i), SIGNAL(disconnected()), this, SLOT(stopKeepAliveTimer()));
+    }
 }
 
 /**

@@ -22,11 +22,11 @@ EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, QObject* p
         msg.append(url.toString());
         LOG(msg);
     }
-    connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::connected, this, &EchoClient::onConnected);
-    connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::disconnected, this, &EchoClient::closed);
-    connect(QtWS::getInstance()->m_pWebSocketBackbone, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), QtWS::getInstance(), &QtWS::onSslErrors);
+    connect(QtWS::getInstance()->m_pWebSocketBackbone[0], &QWebSocket::connected, this, &EchoClient::onConnected);
+    connect(QtWS::getInstance()->m_pWebSocketBackbone[0], &QWebSocket::disconnected, this, &EchoClient::closed);
+    connect(QtWS::getInstance()->m_pWebSocketBackbone[0], QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), QtWS::getInstance(), &QtWS::onSslErrors);
 
-    QtWS::getInstance()->m_pWebSocketBackbone->open(QUrl(url));
+    QtWS::getInstance()->m_pWebSocketBackbone[0]->open(QUrl(url));
 }
 
 /**
@@ -37,8 +37,8 @@ void EchoClient::onConnected()
     if (m_debug) {
         LOG(tr("WebSocket connected"));
     }
-    connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::textMessageReceived, this, &EchoClient::onTextMessageReceived);
-    connect(QtWS::getInstance()->m_pWebSocketBackbone, &QWebSocket::binaryMessageReceived, this, &EchoClient::onBinaryMessageReceived);
+    connect(QtWS::getInstance()->m_pWebSocketBackbone[0], &QWebSocket::textMessageReceived, this, &EchoClient::onTextMessageReceived);
+    connect(QtWS::getInstance()->m_pWebSocketBackbone[0], &QWebSocket::binaryMessageReceived, this, &EchoClient::onBinaryMessageReceived);
     QByteArray content;
 #ifdef Q_OS_WIN32
     _setmode(_fileno(stdin), _O_BINARY);
@@ -62,12 +62,12 @@ void EchoClient::onConnected()
     if (m_compression) {
         QByteArray ba;
         QtWS::getInstance()->gzipCompress(text.toUtf8(), ba, 9);
-        QtWS::getInstance()->m_pWebSocketBackbone->sendBinaryMessage(ba);
+        QtWS::getInstance()->m_pWebSocketBackbone[0]->sendBinaryMessage(ba);
     } else {
-        QtWS::getInstance()->m_pWebSocketBackbone->sendTextMessage(text);
+        QtWS::getInstance()->m_pWebSocketBackbone[0]->sendTextMessage(text);
     }
     if (text.startsWith(BACKBONE_REGISTRATION_MSG) || text.startsWith(CHANNEL_LIST_NOTIFICATION) || m_debug == false) {
-        QtWS::getInstance()->m_pWebSocketBackbone->flush();
+        QtWS::getInstance()->m_pWebSocketBackbone[0]->flush();
         emit closed();
     }
 }
@@ -83,7 +83,7 @@ void EchoClient::onTextMessageReceived(QString message)
         msg.append(message);
         LOG(msg);
     }
-    QtWS::getInstance()->m_pWebSocketBackbone->close();
+    QtWS::getInstance()->m_pWebSocketBackbone[0]->close();
 }
 
 /**
@@ -101,5 +101,5 @@ void EchoClient::onBinaryMessageReceived(QByteArray message)
         msg.append(message);
         LOG(msg);
     }
-    QtWS::getInstance()->m_pWebSocketBackbone->close();
+    QtWS::getInstance()->m_pWebSocketBackbone[0]->close();
 }

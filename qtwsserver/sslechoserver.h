@@ -15,7 +15,7 @@ QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
 class SslEchoServer : public QObject {
     Q_OBJECT
 public:
-    explicit SslEchoServer(quint16 port, quint16 sslPort, QObject* parent = nullptr, bool encrypted = false, QString cert = "", QString key = "", QString bbUrl = "");
+    explicit SslEchoServer(quint16 port, quint16 sslPort, QObject* parent = nullptr, bool encrypted = false, QString cert = "", QString key = "", QStringList bbUrl = QStringList());
     ~SslEchoServer() override;
 
     bool startupComplete = false;
@@ -39,7 +39,7 @@ private slots:
 private:
     QMap<QString, QList<QWebSocket*>> m_channels;
     QTimer bbResetTimer;
-    QString m_sBackbone = "";
+    QStringList m_sBackbone;
     QStringList m_messageHashes;
 };
 

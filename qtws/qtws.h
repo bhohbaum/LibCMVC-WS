@@ -46,7 +46,7 @@ public:
     static QtWS* instance;
 
     QWebSocketServer *m_pWebSocketServer, *m_pWebSocketServerSSL;
-    QWebSocket* m_pWebSocketBackbone;
+    QList<QWebSocket*> m_pWebSocketBackbone;
 
     QList<QWebSocket*> m_clients;
     QList<QWebSocket*> m_backbones;

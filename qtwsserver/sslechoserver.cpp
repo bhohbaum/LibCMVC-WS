@@ -23,7 +23,7 @@ QT_USE_NAMESPACE
  * @param key
  * @param bbUrl
  */
-SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, bool encrypted, QString cert, QString key, QString bbUrl)
+SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, bool encrypted, QString cert, QString key, QStringList bbUrl)
     : QObject(parent)
 {
     QtWS::getInstance()->m_pWebSocketServer = new QWebSocketServer(QStringLiteral("WS PubSub Server"),
@@ -82,35 +82,38 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
             return;
         }
     }
-    if (bbUrl != "") {
-        m_sBackbone = bbUrl;
-        connect(QtWS::getInstance()->m_pWebSocketBackbone,
+    m_sBackbone = bbUrl;
+    for (int i = 0; i < bbUrl.length(); i++) {
+        if (QtWS::getInstance()->m_pWebSocketBackbone.count() < bbUrl.count()) {
+            QtWS::getInstance()->m_pWebSocketBackbone.append(new QWebSocket());
+        }
+        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
             &QWebSocket::connected,
             this,
             &SslEchoServer::onBackboneConnected);
-        connect(QtWS::getInstance()->m_pWebSocketBackbone,
+        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
             &QWebSocket::disconnected,
             this,
             &SslEchoServer::onBackboneDisconnected);
-        connect(QtWS::getInstance()->m_pWebSocketBackbone,
+        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
             QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),
             QtWS::getInstance(),
             &QtWS::onSslErrors);
-        QtWS::getInstance()->m_pWebSocketBackbone->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone));
-        connect(QtWS::getInstance()->m_pWebSocketBackbone,
+        QtWS::getInstance()->m_pWebSocketBackbone.at(i)->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone.at(i)));
+        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
             &QWebSocket::textMessageReceived,
             this,
             &SslEchoServer::processTextMessageBB);
-        connect(QtWS::getInstance()->m_pWebSocketBackbone,
+        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
             &QWebSocket::binaryMessageReceived,
             this,
             &SslEchoServer::processBinaryMessageBB);
-        connect(QtWS::getInstance()->m_pWebSocketBackbone,
+        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
             &QWebSocket::pong,
             this,
             &SslEchoServer::resetBackboneResetTimer);
-        QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
-        QtWS::getInstance()->m_backbones << QtWS::getInstance()->m_pWebSocketBackbone;
+        QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
+        QtWS::getInstance()->m_backbones.append(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
         bbResetTimer.setInterval(3500);
         connect(&bbResetTimer, SIGNAL(timeout()), this, SLOT(resetBackboneConnection()));
         bbResetTimer.start();
@@ -461,7 +464,8 @@ void SslEchoServer::socketDisconnected()
  */
 void SslEchoServer::onBackboneConnected()
 {
-    QtWS::getInstance()->m_pWebSocketBackbone->sendTextMessage(BACKBONE_REGISTRATION_MSG);
+    QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
+    pClient->sendTextMessage(BACKBONE_REGISTRATION_MSG);
 }
 
 /**
@@ -469,9 +473,10 @@ void SslEchoServer::onBackboneConnected()
  */
 void SslEchoServer::onBackboneDisconnected()
 {
+    QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     LOG(tr("Backbone disconnected. Restoring connection...."));
     bbResetTimer.stop();
-    QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
+    QtWS::getInstance()->m_backbones.removeAll(pClient);
     QTimer timer(this);
     timer.singleShot(1000, this, SLOT(restoreBackboneConnection()));
 }
@@ -481,10 +486,13 @@ void SslEchoServer::onBackboneDisconnected()
  */
 void SslEchoServer::restoreBackboneConnection()
 {
+    QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     LOG(tr("Opening new backbone connection...."));
-    QtWS::getInstance()->m_pWebSocketBackbone->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone));
-    QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
-    QtWS::getInstance()->m_backbones << QtWS::getInstance()->m_pWebSocketBackbone;
+    // TODO: correct url????
+    LOG(QtWS::getInstance()->findMetaDataByWebSocket(pClient)->getWebSocket()->requestUrl().toString());
+    pClient->open(QtWS::getInstance()->secureBackboneUrl(pClient->requestUrl().toString()));
+    QtWS::getInstance()->m_backbones.removeAll(pClient);
+    QtWS::getInstance()->m_backbones << pClient;
     bbResetTimer.start();
 }
 
@@ -496,12 +504,13 @@ void SslEchoServer::resetBackboneConnection()
     LOG(tr("Preparing for a full restart...."));
     bbResetTimer.stop();
     QtWS::getInstance()->stopKeepAliveTimer();
-    QtWS::getInstance()->m_pWebSocketBackbone->disconnect();
-    QtWS::getInstance()->m_pWebSocketBackbone->close();
-    QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
-    QtWS::getInstance()->m_clients.removeAll(QtWS::getInstance()->m_pWebSocketBackbone);
-    delete QtWS::getInstance()->m_pWebSocketBackbone;
-
+    for (int i = 0; i < QtWS::getInstance()->m_pWebSocketBackbone.count(); i++) {
+        QtWS::getInstance()->m_pWebSocketBackbone.at(i)->disconnect();
+        QtWS::getInstance()->m_pWebSocketBackbone.at(i)->close();
+        QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
+        QtWS::getInstance()->m_clients.removeAll(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
+        delete QtWS::getInstance()->m_pWebSocketBackbone.at(i);
+    }
     for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
         if (QtWS::getInstance()->m_backbones.at(i) != nullptr)
             QtWS::getInstance()->m_backbones.at(i)->close();

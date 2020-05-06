@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     bool encrypted = false;
     QString certificate(":/cert/localhost.cert");
     QString key(":/cert/localhost.key");
-    QString bbUrl("");
+    QStringList bbUrl("");
 
     QtWS::getInstance()->loadTranslation(&a);
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
             ps = static_cast<unsigned short>(port.toShort());
         }
         if (QString::compare(QString(argv[i]), QString("-b")) == 0) {
-            bbUrl = QString(argv[i + 1]);
+            bbUrl.append(QString(argv[i + 1]));
         }
     }
 
