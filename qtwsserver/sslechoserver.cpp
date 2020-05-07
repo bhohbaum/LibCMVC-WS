@@ -295,34 +295,6 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
                     }
                 }
             }
-            /*
-            for (int i = 0; i < QtWS::getInstance()->m_wsMetaDataList.count(); i++) {
-                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isClientSocket()) {
-                    if (QtWS::getInstance()->getChannelFromSocket(
-                            QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket())
-                            == channel
-                        || QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(
-                            channel)) {
-                        QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()->sendTextMessage(
-                            message);
-                        ctr++;
-                    }
-                }
-                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isBackboneSocket()) {
-                    if (pClient != QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()) {
-                        if (QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(
-                                channel)) {
-                            QtWS::getInstance()
-                                ->m_wsMetaDataList.at(i)
-                                ->getWebSocket()
-                                ->sendTextMessage(bbMessage);
-                            ctr2++;
-                        }
-                    }
-                }
-            }
-            */
-
             QString msg;
             msg.append(tr("Distributing event to "))
                 .append(QString::number(ctr))
@@ -371,6 +343,7 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     if (channel.startsWith(MESSAGE_ID_TOKEN)) {
         messageID = channel;
         QtWS::getInstance()->getChannelFromMessage(&msg, &channel);
+        message = msg.toUtf8();
     } else if (message.startsWith(MESSAGE_ID_TOKEN)) {
         QtWS::getInstance()->getChannelFromMessage(&msg, &messageID);
         message = msg.toUtf8();
@@ -455,25 +428,6 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
                     }
                 }
             }
-            /*
-            for (int i = 0; i < QtWS::getInstance()->m_wsMetaDataList.count(); i++) {
-                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isClientSocket()) {
-                    if (QtWS::getInstance()->getChannelFromSocket(QtWS::getInstance()->m_clients[i]) == channel) {
-                        QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()->sendBinaryMessage(message);
-                        ctr++;
-                    }
-                }
-                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isBackboneSocket()) {
-                    if (pClient != QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()) {
-                        if (QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(channel)) {
-                            QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()->sendBinaryMessage(cbbMessage);
-                            ctr2++;
-                        }
-                    }
-                }
-            }
-            */
-
             for (int i = 0; i < QtWS::getInstance()->m_wsMetaDataList.count(); i++) {
                 if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isClientSocket()) {
                     if (QtWS::getInstance()->getChannelFromSocket(
