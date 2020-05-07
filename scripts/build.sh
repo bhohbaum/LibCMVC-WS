@@ -2,6 +2,8 @@
 
 PWD=`pwd`
 
+sudo echo ok
+
 cd /home/botho/git/build-qtws-Desktop_Qt_5_13_0_GCC_64bit-Release
 make clean
 make qmake_all

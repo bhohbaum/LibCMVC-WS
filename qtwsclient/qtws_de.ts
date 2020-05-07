@@ -9,23 +9,23 @@
         <translation>WebSocket Server: </translation>
     </message>
     <message>
-        <location filename="echoclient.cpp" line="38"/>
+        <location filename="echoclient.cpp" line="41"/>
         <source>WebSocket connected</source>
         <translation>WebSocket verbunden</translation>
     </message>
     <message>
-        <location filename="echoclient.cpp" line="56"/>
+        <location filename="echoclient.cpp" line="59"/>
         <source> (compressed, binary)</source>
         <translation> (komprimiert, binär)</translation>
     </message>
     <message>
-        <location filename="echoclient.cpp" line="58"/>
+        <location filename="echoclient.cpp" line="61"/>
         <source>Sending message</source>
         <translation>Sende Nachricht</translation>
     </message>
     <message>
-        <location filename="echoclient.cpp" line="82"/>
-        <location filename="echoclient.cpp" line="100"/>
+        <location filename="echoclient.cpp" line="85"/>
+        <location filename="echoclient.cpp" line="103"/>
         <source>Message received: </source>
         <translation>Nachricht empfangen: </translation>
     </message>

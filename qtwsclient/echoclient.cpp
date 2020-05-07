@@ -22,6 +22,9 @@ EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, QObject* p
         msg.append(url.toString());
         LOG(msg);
     }
+    if (QtWS::getInstance()->m_pWebSocketBackbone.count() < 1) {
+        QtWS::getInstance()->m_pWebSocketBackbone.append(new QWebSocket());
+    }
     connect(QtWS::getInstance()->m_pWebSocketBackbone[0], &QWebSocket::connected, this, &EchoClient::onConnected);
     connect(QtWS::getInstance()->m_pWebSocketBackbone[0], &QWebSocket::disconnected, this, &EchoClient::closed);
     connect(QtWS::getInstance()->m_pWebSocketBackbone[0], QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), QtWS::getInstance(), &QtWS::onSslErrors);

@@ -26,6 +26,7 @@ public slots:
     void updateChannelAnnouncement();
     void forceChannelAnnouncement();
     bool isValidChannelName(QString name);
+    QString getRequestUrl();
 
 signals:
 
@@ -33,6 +34,10 @@ private:
     QStringList m_channels;
     QWebSocket* m_webSocket;
     QString oldChannelListString;
+    QString m_requestUrl;
+
+private slots:
+    void updateRequestUrlFromSocket();
 };
 
 #endif // WSMETADATA_H

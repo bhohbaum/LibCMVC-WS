@@ -84,36 +84,41 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
     }
     m_sBackbone = bbUrl;
     for (int i = 0; i < bbUrl.length(); i++) {
-        if (QtWS::getInstance()->m_pWebSocketBackbone.count() < bbUrl.count()) {
-            QtWS::getInstance()->m_pWebSocketBackbone.append(new QWebSocket());
+        if (!bbUrl.at(i).startsWith("ws://") && !bbUrl.at(i).startsWith("wss://")) {
+            continue;
         }
-        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
+        //if (QtWS::getInstance()->m_pWebSocketBackbone.count() < bbUrl.count()) {
+        QWebSocket* newSocket = new QWebSocket();
+        QtWS::getInstance()->m_pWebSocketBackbone.append(newSocket);
+        QtWS::getInstance()->findMetaDataByWebSocket(newSocket);
+        //}
+        connect(newSocket,
             &QWebSocket::connected,
             this,
             &SslEchoServer::onBackboneConnected);
-        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
+        connect(newSocket,
             &QWebSocket::disconnected,
             this,
             &SslEchoServer::onBackboneDisconnected);
-        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
+        connect(newSocket,
             QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),
             QtWS::getInstance(),
             &QtWS::onSslErrors);
-        QtWS::getInstance()->m_pWebSocketBackbone.at(i)->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone.at(i)));
-        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
+        newSocket->open(QtWS::getInstance()->secureBackboneUrl(m_sBackbone.at(i)));
+        connect(newSocket,
             &QWebSocket::textMessageReceived,
             this,
             &SslEchoServer::processTextMessageBB);
-        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
+        connect(newSocket,
             &QWebSocket::binaryMessageReceived,
             this,
             &SslEchoServer::processBinaryMessageBB);
-        connect(QtWS::getInstance()->m_pWebSocketBackbone.at(i),
+        connect(newSocket,
             &QWebSocket::pong,
             this,
             &SslEchoServer::resetBackboneResetTimer);
-        QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
-        QtWS::getInstance()->m_backbones.append(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
+        QtWS::getInstance()->m_backbones.removeAll(newSocket);
+        QtWS::getInstance()->m_backbones.append(newSocket);
         bbResetTimer.setInterval(60000);
         connect(&bbResetTimer, SIGNAL(timeout()), this, SLOT(resetBackboneConnection()));
         bbResetTimer.start();
@@ -208,7 +213,10 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
 {
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     QString messageID = "";
-    if (message.startsWith(MESSAGE_ID_TOKEN)) {
+    if (channel.startsWith(MESSAGE_ID_TOKEN)) {
+        messageID = channel;
+        QtWS::getInstance()->getChannelFromMessage(&message, &channel);
+    } else if (message.startsWith(MESSAGE_ID_TOKEN)) {
         QtWS::getInstance()->getChannelFromMessage(&message, &messageID);
     } else {
         QString s;
@@ -287,6 +295,34 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
                     }
                 }
             }
+            /*
+            for (int i = 0; i < QtWS::getInstance()->m_wsMetaDataList.count(); i++) {
+                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isClientSocket()) {
+                    if (QtWS::getInstance()->getChannelFromSocket(
+                            QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket())
+                            == channel
+                        || QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(
+                            channel)) {
+                        QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()->sendTextMessage(
+                            message);
+                        ctr++;
+                    }
+                }
+                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isBackboneSocket()) {
+                    if (pClient != QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()) {
+                        if (QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(
+                                channel)) {
+                            QtWS::getInstance()
+                                ->m_wsMetaDataList.at(i)
+                                ->getWebSocket()
+                                ->sendTextMessage(bbMessage);
+                            ctr2++;
+                        }
+                    }
+                }
+            }
+            */
+
             QString msg;
             msg.append(tr("Distributing event to "))
                 .append(QString::number(ctr))
@@ -332,7 +368,10 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
         message = ba;
     }
     QString messageID = "";
-    if (message.startsWith(MESSAGE_ID_TOKEN)) {
+    if (channel.startsWith(MESSAGE_ID_TOKEN)) {
+        messageID = channel;
+        QtWS::getInstance()->getChannelFromMessage(&msg, &channel);
+    } else if (message.startsWith(MESSAGE_ID_TOKEN)) {
         QtWS::getInstance()->getChannelFromMessage(&msg, &messageID);
         message = msg.toUtf8();
     } else {
@@ -416,6 +455,51 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
                     }
                 }
             }
+            /*
+            for (int i = 0; i < QtWS::getInstance()->m_wsMetaDataList.count(); i++) {
+                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isClientSocket()) {
+                    if (QtWS::getInstance()->getChannelFromSocket(QtWS::getInstance()->m_clients[i]) == channel) {
+                        QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()->sendBinaryMessage(message);
+                        ctr++;
+                    }
+                }
+                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isBackboneSocket()) {
+                    if (pClient != QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()) {
+                        if (QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(channel)) {
+                            QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()->sendBinaryMessage(cbbMessage);
+                            ctr2++;
+                        }
+                    }
+                }
+            }
+            */
+
+            for (int i = 0; i < QtWS::getInstance()->m_wsMetaDataList.count(); i++) {
+                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isClientSocket()) {
+                    if (QtWS::getInstance()->getChannelFromSocket(
+                            QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket())
+                            == channel
+                        || QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(
+                            channel)) {
+                        QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()->sendBinaryMessage(
+                            message);
+                        ctr++;
+                    }
+                }
+                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isBackboneSocket()) {
+                    if (pClient != QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()) {
+                        if (QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(
+                                channel)) {
+                            QtWS::getInstance()
+                                ->m_wsMetaDataList.at(i)
+                                ->getWebSocket()
+                                ->sendBinaryMessage(bbMessage.toUtf8());
+                            ctr2++;
+                        }
+                    }
+                }
+            }
+
             QString msg;
             msg.append(tr("Distributing event to "))
                 .append(QString::number(ctr))
@@ -477,6 +561,9 @@ void SslEchoServer::onBackboneDisconnected()
     LOG(tr("Backbone disconnected. Restoring connection...."));
     bbResetTimer.stop();
     QtWS::getInstance()->m_backbones.removeAll(pClient);
+    sleep(1);
+    m_bbRestoreClientQueue.append(pClient);
+    //restoreBackboneConnection(pClient);
     QTimer timer(this);
     timer.singleShot(1000, this, SLOT(restoreBackboneConnection()));
 }
@@ -486,14 +573,18 @@ void SslEchoServer::onBackboneDisconnected()
  */
 void SslEchoServer::restoreBackboneConnection()
 {
-    QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
-    LOG(tr("Opening new backbone connection...."));
-    // TODO: correct url????
-    LOG(QtWS::getInstance()->findMetaDataByWebSocket(pClient)->getWebSocket()->requestUrl().toString());
-    pClient->open(QtWS::getInstance()->secureBackboneUrl(pClient->requestUrl().toString()));
-    QtWS::getInstance()->m_backbones.removeAll(pClient);
-    QtWS::getInstance()->m_backbones << pClient;
-    bbResetTimer.start();
+    while (!m_bbRestoreClientQueue.isEmpty()) {
+        QWebSocket* pClient = m_bbRestoreClientQueue.at(0);
+        m_bbRestoreClientQueue.pop_front();
+        LOG(tr("Opening new backbone connection...."));
+        // TODO: correct url????
+        QString url = QtWS::getInstance()->findMetaDataByWebSocket(pClient)->getRequestUrl();
+        LOG(url);
+        pClient->open(QtWS::getInstance()->secureBackboneUrl(url));
+        QtWS::getInstance()->m_backbones.removeAll(pClient);
+        QtWS::getInstance()->m_backbones.append(pClient);
+        bbResetTimer.start();
+    }
 }
 
 /**
@@ -509,7 +600,10 @@ void SslEchoServer::resetBackboneConnection()
         QtWS::getInstance()->m_pWebSocketBackbone.at(i)->close();
         QtWS::getInstance()->m_backbones.removeAll(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
         QtWS::getInstance()->m_clients.removeAll(QtWS::getInstance()->m_pWebSocketBackbone.at(i));
-        delete QtWS::getInstance()->m_pWebSocketBackbone.at(i);
+        QtWS::getInstance()
+            ->findMetaDataByWebSocket(QtWS::getInstance()->m_pWebSocketBackbone.at(i))
+            ->deleteLater();
+        QtWS::getInstance()->m_pWebSocketBackbone.at(i)->deleteLater();
     }
     for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
         if (QtWS::getInstance()->m_backbones.at(i) != nullptr)

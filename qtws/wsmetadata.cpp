@@ -53,6 +53,7 @@ QWebSocket* WsMetaData::getWebSocket()
 void WsMetaData::setWebSocket(QWebSocket* pSocket)
 {
     m_webSocket = pSocket;
+    connect(m_webSocket, SIGNAL(connected()), this, SLOT(updateRequestUrlFromSocket()));
 }
 
 bool WsMetaData::isBackboneSocket()
@@ -108,4 +109,14 @@ void WsMetaData::forceChannelAnnouncement()
 bool WsMetaData::isValidChannelName(QString name)
 {
     return name != BACKBONE_REGISTRATION_MSG && name != CHANNEL_LIST_NOTIFICATION && name != "/";
+}
+
+QString WsMetaData::getRequestUrl()
+{
+    return m_requestUrl;
+}
+
+void WsMetaData::updateRequestUrlFromSocket()
+{
+    m_requestUrl = m_webSocket->request().url().toString();
 }

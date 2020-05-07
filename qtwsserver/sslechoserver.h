@@ -41,6 +41,7 @@ private:
     QTimer bbResetTimer;
     QStringList m_sBackbone;
     QStringList m_messageHashes;
+    QList<QWebSocket*> m_bbRestoreClientQueue;
 };
 
 #endif //SSLECHOSERVER_H
