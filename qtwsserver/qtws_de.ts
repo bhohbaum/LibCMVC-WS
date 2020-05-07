@@ -95,5 +95,9 @@
         <source>Message is a duplicate, ignoring it! ID: </source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Sending message to client: </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>

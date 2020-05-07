@@ -209,10 +209,11 @@ void SslEchoServer::processTextMessage(QString message)
  * @param message
  * @param channel
  */
-void SslEchoServer::__processTextMessage(QString message, QString channel)
+void SslEchoServer::__processTextMessage(QString msg, QString channel)
 {
     QWebSocket* pClient = qobject_cast<QWebSocket*>(sender());
     QString messageID = "";
+    QByteArray message(msg.toUtf8());
     if (channel.startsWith(MESSAGE_ID_TOKEN)) {
         messageID = channel;
         QtWS::getInstance()->getChannelFromMessage(&message, &channel);
@@ -265,7 +266,7 @@ void SslEchoServer::__processTextMessage(QString message, QString channel)
             }
         }
     }
-    QString bbMessage(messageID);
+    QByteArray bbMessage(messageID.toUtf8());
     bbMessage.append("\n");
     bbMessage.append(channel);
     bbMessage.append("\n");
@@ -342,11 +343,9 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     QString messageID = "";
     if (channel.startsWith(MESSAGE_ID_TOKEN)) {
         messageID = channel;
-        QtWS::getInstance()->getChannelFromMessage(&msg, &channel);
-        message = msg.toUtf8();
+        QtWS::getInstance()->getChannelFromMessage(&message, &channel);
     } else if (message.startsWith(MESSAGE_ID_TOKEN)) {
-        QtWS::getInstance()->getChannelFromMessage(&msg, &messageID);
-        message = msg.toUtf8();
+        QtWS::getInstance()->getChannelFromMessage(&message, &messageID);
     } else {
         QString s;
         QDate date(QDate::currentDate());
@@ -389,19 +388,18 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     if (channel == "/") {
         for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
             if (pClient == QtWS::getInstance()->m_backbones[i]) {
-                QtWS::getInstance()->getChannelFromMessage(&msg, &channel);
-                message = msg.toUtf8();
+                QtWS::getInstance()->getChannelFromMessage(&message, &channel);
             }
         }
     }
     QtWS::getInstance()->gzipCompress(message, ba, 9);
     QByteArray cMessage(ba);
-    QString bbMessage(messageID);
+    QByteArray bbMessage(messageID.toUtf8());
     bbMessage.append("\n");
     bbMessage.append(channel);
     bbMessage.append("\n");
     bbMessage.append(message);
-    QtWS::getInstance()->gzipCompress(bbMessage.toUtf8(), ba, 9);
+    QtWS::getInstance()->gzipCompress(bbMessage, ba, 9);
     QByteArray cbbMessage(ba);
     if (pClient) {
         if (message.startsWith(BACKBONE_REGISTRATION_MSG)) {
@@ -414,6 +412,7 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
             int ctr = 0, ctr2 = 0;
             for (int i = 0; i < QtWS::getInstance()->m_clients.count(); i++) {
                 if (QtWS::getInstance()->getChannelFromSocket(QtWS::getInstance()->m_clients[i]) == channel) { // && pClient != m_clients[i]
+                    LOG(tr("Sending message to client: ").append(message));
                     QtWS::getInstance()->m_clients[i]->sendBinaryMessage(cMessage);
                     ctr++;
                 }
@@ -556,8 +555,9 @@ void SslEchoServer::resetBackboneConnection()
 void SslEchoServer::processTextMessageBB(QString message)
 {
     QString channel;
-    QtWS::getInstance()->getChannelFromMessage(&message, &channel);
-    __processTextMessage(message, channel);
+    QByteArray ba(message.toUtf8());
+    QtWS::getInstance()->getChannelFromMessage(&ba, &channel);
+    __processTextMessage(ba, channel);
 }
 
 /**
@@ -573,8 +573,8 @@ void SslEchoServer::processBinaryMessageBB(QByteArray message)
         message = ba;
     }
     QString channel;
-    QtWS::getInstance()->getChannelFromMessage(&msg, &channel);
-    __processBinaryMessage(msg.toUtf8(), channel);
+    QtWS::getInstance()->getChannelFromMessage(&message, &channel);
+    __processBinaryMessage(message, channel);
 }
 
 /**

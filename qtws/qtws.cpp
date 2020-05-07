@@ -52,7 +52,12 @@ bool QtWS::gzipCompress(QByteArray input, QByteArray& output, int level)
         strm.opaque = Z_NULL;
         strm.avail_in = 0;
         strm.next_in = Z_NULL;
-        int ret = deflateInit2(&strm, qMax(-1, qMin(9, level)), Z_DEFLATED, GZIP_WINDOWS_BIT, 8, Z_DEFAULT_STRATEGY);
+        int ret = deflateInit2(&strm,
+            qMax(-1, qMin(9, level)),
+            Z_DEFLATED,
+            GZIP_WINDOWS_BIT,
+            8,
+            Z_DEFAULT_STRATEGY);
         if (ret != Z_OK) {
             return (false);
         }
@@ -218,7 +223,10 @@ void QtWS::startBackboneWatchdog()
 {
     for (int i = 0; i < m_pWebSocketBackbone.count(); i++) {
         connect(m_pWebSocketBackbone.at(i), SIGNAL(connected()), this, SLOT(startKeepAliveTimer()));
-        connect(m_pWebSocketBackbone.at(i), SIGNAL(disconnected()), this, SLOT(stopKeepAliveTimer()));
+        connect(m_pWebSocketBackbone.at(i),
+            SIGNAL(disconnected()),
+            this,
+            SLOT(stopKeepAliveTimer()));
     }
 }
 
@@ -345,8 +353,8 @@ QStringList QtWS::buildChannelListArray(QString channels)
 
 void QtWS::handleBackboneRegistration(QWebSocket* pClient)
 {
-    LOG(wsInfo(
-        tr("Client identified as another server, moving connection to backbone pool: "), pClient));
+    LOG(wsInfo(tr("Client identified as another server, moving connection to backbone pool: "),
+        pClient));
     m_clients.removeAll(pClient);
     m_backbones.removeAll(pClient);
     m_backbones << pClient;
@@ -377,7 +385,16 @@ QString QtWS::getChannelFromSocket(QWebSocket* pSocket)
     return pSocket->request().url().path();
 }
 
-bool QtWS::getChannelFromMessage(QString* message, QString* channel)
+void QtWS::getChannelFromMessage(QByteArray* message, QString* channel)
+{
+    QString msg(*message), chan(*channel);
+    getChannelFromMessage(&msg, &chan);
+    message->clear();
+    message->append(msg);
+    *channel = chan;
+}
+
+void QtWS::getChannelFromMessage(QString* message, QString* channel)
 {
     QString msg(*message);
     QStringList arr = msg.split("\n");
@@ -385,5 +402,5 @@ bool QtWS::getChannelFromMessage(QString* message, QString* channel)
     arr.pop_front();
     msg = arr.join("\n");
     *message = msg.toUtf8();
-    return arr.length() > 0;
+    //return arr.length() > 0;
 }
