@@ -26,9 +26,14 @@ int main(int argc, char* argv[])
                                                     << "compress",
         QCoreApplication::translate("main", "Compress data for transmission [default: raw data]."));
     parser.addOption(compressOption);
+    QCommandLineOption readOption(QStringList() << "r"
+                                                << "read(only)",
+        QCoreApplication::translate("main", "Receive only."));
+    parser.addOption(readOption);
     parser.process(a);
     bool debug = parser.isSet(dbgOption);
     bool comp = parser.isSet(compressOption);
+    bool read = parser.isSet(readOption);
 
     QString serverLocation = "";
     for (int i = 0; i < argc; i++) {
@@ -39,7 +44,7 @@ int main(int argc, char* argv[])
     }
 
     serverLocation.replace("\n", "").replace("\r", "");
-    EchoClient client(QUrl(serverLocation), debug, comp);
+    EchoClient client(QUrl(serverLocation), debug, comp, read);
     QObject::connect(&client, &EchoClient::closed, &a, &quit_app);
 
     return a.exec();

@@ -9,7 +9,7 @@ class EchoClient : public QObject {
     Q_OBJECT
 
 public:
-    explicit EchoClient(const QUrl& url, bool debug = false, bool compression = false, QObject* parent = nullptr);
+    explicit EchoClient(const QUrl& url, bool debug = false, bool compression = false, bool read = false, QObject* parent = nullptr);
 
 Q_SIGNALS:
     void closed();
@@ -23,6 +23,7 @@ private:
     QUrl m_url;
     bool m_debug;
     bool m_compression;
+    bool m_read;
 };
 
 #endif // ECHOCLIENT_H
