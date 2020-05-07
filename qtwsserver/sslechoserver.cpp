@@ -428,32 +428,6 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
                     }
                 }
             }
-            for (int i = 0; i < QtWS::getInstance()->m_wsMetaDataList.count(); i++) {
-                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isClientSocket()) {
-                    if (QtWS::getInstance()->getChannelFromSocket(
-                            QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket())
-                            == channel
-                        || QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(
-                            channel)) {
-                        QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()->sendBinaryMessage(
-                            message);
-                        ctr++;
-                    }
-                }
-                if (QtWS::getInstance()->m_wsMetaDataList.at(i)->isBackboneSocket()) {
-                    if (pClient != QtWS::getInstance()->m_wsMetaDataList.at(i)->getWebSocket()) {
-                        if (QtWS::getInstance()->m_wsMetaDataList.at(i)->getChannels().contains(
-                                channel)) {
-                            QtWS::getInstance()
-                                ->m_wsMetaDataList.at(i)
-                                ->getWebSocket()
-                                ->sendBinaryMessage(bbMessage.toUtf8());
-                            ctr2++;
-                        }
-                    }
-                }
-            }
-
             QString msg;
             msg.append(tr("Distributing event to "))
                 .append(QString::number(ctr))
