@@ -31,6 +31,10 @@
         <source>Channels: </source>
         <translation>Kanäle: </translation>
     </message>
+    <message>
+        <source>Could not find message id token in input data!</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>WsMetaData</name>

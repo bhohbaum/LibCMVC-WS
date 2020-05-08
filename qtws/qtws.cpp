@@ -1,4 +1,5 @@
 #include "qtws.h"
+#include <QRandomGenerator>
 
 QtWS* QtWS::instance = nullptr;
 
@@ -9,7 +10,6 @@ QtWS::QtWS()
 {
     Q_INIT_RESOURCE(qtws);
 
-    //m_pWebSocketBackbone[0] = new QWebSocket();
     m_keepaliveTimer.setInterval(28500);
     connect(&m_keepaliveTimer, SIGNAL(timeout()), this, SLOT(sendKeepAlivePing()));
     startBackboneWatchdog();
@@ -358,7 +358,9 @@ void QtWS::handleBackboneRegistration(QWebSocket* pClient)
     m_clients.removeAll(pClient);
     m_backbones.removeAll(pClient);
     m_backbones << pClient;
-    emit updateChannels();
+    m_channelListUpdateTimer.stop();
+    m_channelListUpdateTimer.singleShot(1000, this, SIGNAL(updateChannels()));
+    //emit updateChannels();
     QString bbMessage("/bb-event");
     bbMessage.append("\n");
     bbMessage.append(CHANNEL_LIST_REQUEST);
@@ -377,7 +379,9 @@ void QtWS::handleChannelListNotification(QString message, QWebSocket* pClient)
     wmd->addChannels(arr);
     QString str(tr("Channels: "));
     LOG(str.append(buildChannelListString(arr)));
-    emit updateChannels();
+    m_channelListUpdateTimer.stop();
+    m_channelListUpdateTimer.singleShot(1000, this, SIGNAL(updateChannels()));
+    //emit updateChannels();
 }
 
 QString QtWS::getChannelFromSocket(QWebSocket* pSocket)
@@ -387,11 +391,18 @@ QString QtWS::getChannelFromSocket(QWebSocket* pSocket)
 
 void QtWS::getChannelFromMessage(QByteArray* message, QString* channel)
 {
+    /*
     QString msg(*message), chan(*channel);
     getChannelFromMessage(&msg, &chan);
     message->clear();
     message->append(msg);
     *channel = chan;
+    */
+    QString msg(*message);
+    QList<QByteArray> arr = message->split('\n');
+    *channel = QString(arr[0]);
+    arr.pop_front();
+    *message = arr.join('\n');
 }
 
 void QtWS::getChannelFromMessage(QString* message, QString* channel)
@@ -400,7 +411,92 @@ void QtWS::getChannelFromMessage(QString* message, QString* channel)
     QStringList arr = msg.split("\n");
     *channel = arr[0];
     arr.pop_front();
-    msg = arr.join("\n");
-    *message = msg.toUtf8();
-    //return arr.length() > 0;
+    *message = arr.join("\n").toUtf8();
+}
+
+void QtWS::sendBackboneMessage(QWebSocket* pSocket,
+    QString messageID,
+    QString channel,
+    QByteArray message,
+    QtWS::MessageType type,
+    bool compressionEnabled)
+{
+    QByteArray bbMessage;
+    bbMessage.append(messageID.trimmed());
+    bbMessage.append("\n");
+    bbMessage.append(channel.trimmed());
+    bbMessage.append("\n");
+    bbMessage.append(message);
+    QByteArray finalMessage(bbMessage);
+    if (compressionEnabled) {
+        QtWS::getInstance()->gzipCompress(bbMessage, finalMessage, 9);
+    }
+    if (type == MessageType::Text && !compressionEnabled) {
+        pSocket->sendTextMessage(finalMessage);
+    } else if (type == MessageType::Binary || compressionEnabled) {
+        pSocket->sendBinaryMessage(finalMessage);
+    }
+}
+
+void QtWS::sendClientMessage(QWebSocket* pSocket,
+    QByteArray message,
+    QtWS::MessageType type,
+    bool compressionEnabled)
+{
+    QByteArray finalMessage(message);
+    if (compressionEnabled) {
+        QtWS::getInstance()->gzipCompress(message, finalMessage, 9);
+    }
+    if (type == MessageType::Text && !compressionEnabled) {
+        pSocket->sendTextMessage(finalMessage);
+    } else if (type == MessageType::Binary || compressionEnabled) {
+        pSocket->sendBinaryMessage(finalMessage);
+    }
+}
+
+void QtWS::parseBackboneMessage(QByteArray inputBuffer,
+    QString* messageID,
+    QString* channel,
+    QByteArray* message,
+    bool* compressionEnabled)
+{
+    QByteArray inputBufferInt(inputBuffer);
+    *compressionEnabled = QtWS::getInstance()->gzipDecompress(inputBuffer, inputBufferInt);
+    QList<QByteArray> arr = inputBuffer.split('\n');
+    *messageID = QString(arr[0]);
+    arr.pop_front();
+    *channel = QString(arr[0]);
+    arr.pop_front();
+    *message = QByteArray(arr.join('\n'));
+    if (m_debug) {
+        if (!messageID->startsWith(MESSAGE_ID_TOKEN)) {
+            LOG(tr("Could not find message id token in input data!"));
+        }
+    }
+}
+
+QString QtWS::generateMessageID()
+{
+    QString s;
+    QDate date(QDate::currentDate());
+    QTime time(QTime::currentTime());
+    QString ts(QString::number(date.year())
+                   .append(":")
+                   .append(s.asprintf("%02d", date.month()))
+                   .append(":")
+                   .append(s.asprintf("%02d", date.day()))
+                   .append(" ")
+                   .append(s.asprintf("%02d", time.hour()))
+                   .append(":")
+                   .append(s.asprintf("%02d", time.minute()))
+                   .append(":")
+                   .append(s.asprintf("%02d", time.second()))
+                   .append(".")
+                   .append(s.asprintf("%03d", time.msec()))
+                   .append(" ")
+                   .append(QString::number(QRandomGenerator::global()->generate())));
+    QString messageID = QString(MESSAGE_ID_TOKEN)
+                            .append(QCryptographicHash::hash(ts.toUtf8(), QCryptographicHash::Algorithm::Md5)
+                                        .toHex());
+    return messageID;
 }

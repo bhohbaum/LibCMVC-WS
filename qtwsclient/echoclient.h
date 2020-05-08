@@ -21,7 +21,6 @@ private slots:
 
 private:
     QUrl m_url;
-    bool m_debug;
     bool m_compression;
     bool m_read;
 };

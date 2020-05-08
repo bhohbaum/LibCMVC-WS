@@ -45,6 +45,8 @@ public:
 
     static QtWS* instance;
 
+    bool m_debug;
+
     QWebSocketServer *m_pWebSocketServer, *m_pWebSocketServerSSL;
     QList<QWebSocket*> m_pWebSocketBackbone;
 
@@ -53,6 +55,11 @@ public:
 
     QList<WsMetaData*> m_wsMetaDataList;
     ChannelTimeoutCtrl m_channelTimeoutCtrl;
+
+    enum MessageType {
+        Text,
+        Binary
+    };
 
 public slots:
     bool gzipCompress(QByteArray input, QByteArray& output, int level = -1);
@@ -76,6 +83,22 @@ public slots:
     QString getChannelFromSocket(QWebSocket* pSocket);
     void getChannelFromMessage(QByteArray* message, QString* channel);
     void getChannelFromMessage(QString* message, QString* channel);
+    void sendBackboneMessage(QWebSocket* pSocket,
+        QString messageID,
+        QString channel,
+        QByteArray message,
+        MessageType type,
+        bool compressionEnabled);
+    void sendClientMessage(QWebSocket* pSocket,
+        QByteArray message,
+        MessageType type,
+        bool compressionEnabled);
+    void parseBackboneMessage(QByteArray inputBuffer,
+        QString* messageID,
+        QString* channel,
+        QByteArray* message,
+        bool* compressionEnabled);
+    QString generateMessageID();
 
 signals:
     void updateChannels();
@@ -84,7 +107,7 @@ signals:
 private:
     QtWS();
 
-    QTimer m_keepaliveTimer;
+    QTimer m_keepaliveTimer, m_channelListUpdateTimer;
     QTranslator m_qtTranslator, m_qtTranslatorLib, m_qtTranslatorClient, m_qtTranslatorServer;
 };
 

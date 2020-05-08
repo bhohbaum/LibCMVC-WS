@@ -14,11 +14,11 @@ QT_USE_NAMESPACE
 EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, bool read, QObject* parent)
     : QObject(parent)
     , m_url(url)
-    , m_debug(debug)
     , m_compression(compression)
     , m_read(read)
 {
-    if (m_debug) {
+    QtWS::getInstance()->m_debug = debug;
+    if (QtWS::getInstance()->m_debug) {
         QString msg(tr("WebSocket server: "));
         msg.append(url.toString());
         LOG(msg);
@@ -38,7 +38,7 @@ EchoClient::EchoClient(const QUrl& url, bool debug, bool compression, bool read,
  */
 void EchoClient::onConnected()
 {
-    if (m_debug) {
+    if (QtWS::getInstance()->m_debug) {
         LOG(tr("WebSocket connected"));
     }
     connect(QtWS::getInstance()->m_pWebSocketBackbone[0], &QWebSocket::textMessageReceived, this, &EchoClient::onTextMessageReceived);
@@ -55,7 +55,7 @@ void EchoClient::onConnected()
             content.append(arr, s);
         }
     } else {
-        if (m_debug)
+        if (QtWS::getInstance()->m_debug)
             LOG(tr("Receive-only mode"));
     }
     QString text;
@@ -64,7 +64,7 @@ void EchoClient::onConnected()
     if (m_compression)
         msgComp = tr(" (compressed, binary)");
     if (!m_read) {
-        if (m_debug) {
+        if (QtWS::getInstance()->m_debug) {
             QString msg(tr("Sending message"));
             msg.append(msgComp).append(": ").append(text);
             LOG(msg);
@@ -89,7 +89,7 @@ void EchoClient::onConnected()
  */
 void EchoClient::onTextMessageReceived(QString message)
 {
-    if (m_debug) {
+    if (QtWS::getInstance()->m_debug) {
         QString msg(tr("Message received: "));
         msg.append(message);
         LOG(msg);
@@ -113,7 +113,7 @@ void EchoClient::onBinaryMessageReceived(QByteArray message)
     if (QtWS::getInstance()->gzipDecompress(message, ba)) {
         message = ba;
     }
-    if (m_debug) {
+    if (QtWS::getInstance()->m_debug) {
         QString msg(tr("Message received: "));
         msg.append(message);
         LOG(msg);

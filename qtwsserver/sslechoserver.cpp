@@ -23,9 +23,10 @@ QT_USE_NAMESPACE
  * @param key
  * @param bbUrl
  */
-SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, bool encrypted, QString cert, QString key, QStringList bbUrl)
+SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, bool encrypted, QString cert, QString key, QStringList bbUrl, bool debug)
     : QObject(parent)
 {
+    QtWS::getInstance()->m_debug = debug;
     QtWS::getInstance()->m_pWebSocketServer = new QWebSocketServer(QStringLiteral("WS PubSub Server"),
         QWebSocketServer::NonSecureMode,
         this);
@@ -122,6 +123,7 @@ SslEchoServer::SslEchoServer(quint16 port, quint16 sslPort, QObject* parent, boo
         bbResetTimer.setInterval(60000);
         connect(&bbResetTimer, SIGNAL(timeout()), this, SLOT(resetBackboneConnection()));
         bbResetTimer.start();
+        QtWS::getInstance()->startKeepAliveTimer();
     }
     startupComplete = true;
 }
@@ -277,7 +279,8 @@ void SslEchoServer::__processTextMessage(QString msg, QString channel)
         } else if (message.startsWith(CHANNEL_LIST_NOTIFICATION)) {
             QtWS::getInstance()->handleChannelListNotification(message, pClient);
         } else if (message.startsWith(CHANNEL_LIST_REQUEST)) {
-            QtWS::getInstance()->forceUpdateChannels();
+            m_channelForceUpdateTimer.stop();
+            m_channelForceUpdateTimer.singleShot(1000, QtWS::getInstance(), SIGNAL(forceUpdateChannels()));
         } else {
             int ctr = 0, ctr2 = 0;
             for (int i = 0; i < QtWS::getInstance()->m_clients.count(); i++) {
@@ -407,7 +410,8 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
         } else if (message.startsWith(CHANNEL_LIST_NOTIFICATION)) {
             QtWS::getInstance()->handleChannelListNotification(message, pClient);
         } else if (message.startsWith(CHANNEL_LIST_REQUEST)) {
-            QtWS::getInstance()->forceUpdateChannels();
+            m_channelForceUpdateTimer.stop();
+            m_channelForceUpdateTimer.singleShot(1000, QtWS::getInstance(), SIGNAL(forceUpdateChannels()));
         } else {
             int ctr = 0, ctr2 = 0;
             for (int i = 0; i < QtWS::getInstance()->m_clients.count(); i++) {
@@ -511,6 +515,7 @@ void SslEchoServer::restoreBackboneConnection()
         QtWS::getInstance()->m_backbones.removeAll(pClient);
         QtWS::getInstance()->m_backbones.append(pClient);
         bbResetTimer.start();
+        QtWS::getInstance()->startKeepAliveTimer();
     }
 }
 
