@@ -361,11 +361,17 @@ void QtWS::handleBackboneRegistration(QWebSocket* pClient)
     m_channelListUpdateTimer.stop();
     m_channelListUpdateTimer.singleShot(1000, this, SIGNAL(updateChannels()));
     //emit updateChannels();
-    QString bbMessage("/bb-event");
-    bbMessage.append("\n");
-    bbMessage.append(CHANNEL_LIST_REQUEST);
+    //QString bbMessage("/bb-event");
+    //bbMessage.append("\n");
+    //bbMessage.append(CHANNEL_LIST_REQUEST);
     for (int i = 0; i < QtWS::getInstance()->m_backbones.count(); i++) {
-        QtWS::getInstance()->m_backbones[i]->sendTextMessage(bbMessage);
+        //QtWS::getInstance()->m_backbones[i]->sendTextMessage(bbMessage);
+        QtWS::getInstance()->sendBackboneMessage(QtWS::getInstance()->m_backbones[i],
+            generateMessageID(),
+            "/bb-event",
+            CHANNEL_LIST_REQUEST,
+            MessageType::Binary,
+            false);
     }
 }
 
@@ -460,8 +466,9 @@ void QtWS::parseBackboneMessage(QByteArray inputBuffer,
     QByteArray* message,
     bool* compressionEnabled)
 {
+    LOG(tr("Parsing backbone message: ").append(inputBuffer))
     QByteArray inputBufferInt(inputBuffer);
-    *compressionEnabled = QtWS::getInstance()->gzipDecompress(inputBuffer, inputBufferInt);
+    *compressionEnabled = QtWS::getInstance()->gzipDecompress(inputBufferInt, inputBuffer);
     QList<QByteArray> arr = inputBuffer.split('\n');
     *messageID = QString(arr[0]);
     arr.pop_front();

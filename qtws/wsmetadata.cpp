@@ -87,11 +87,19 @@ void WsMetaData::updateChannelAnnouncement()
         QString newChannelsMsg = newChannelsArr.join(" ").trimmed();
         if (newChannelsMsg != oldChannelListString) {
             oldChannelListString = newChannelsMsg;
+            QtWS::getInstance()->sendBackboneMessage(getWebSocket(),
+                QtWS::getInstance()->generateMessageID(),
+                "/bb-event",
+                newChannelsMsg.toUtf8(),
+                QtWS::MessageType::Binary,
+                false);
+            /*
             newChannelsMsg.prepend(" ").prepend(CHANNEL_LIST_NOTIFICATION);
             QString bbMessage("/bb-event");
             bbMessage.append("\n");
             bbMessage.append(newChannelsMsg);
             getWebSocket()->sendTextMessage(bbMessage);
+            */
             LOG(QtWS::getInstance()
                     ->wsInfo(tr("Channel list changed for this connnection: "), getWebSocket())
                     .append(": ")

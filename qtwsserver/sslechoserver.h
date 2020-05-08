@@ -24,7 +24,7 @@ private slots:
     void onNewConnection();
     void onNewSSLConnection();
     void processTextMessage(QString message);
-    void __processTextMessage(QString msg, QString channel = "");
+    void __processTextMessage(QString message, QString channel = "");
     void processBinaryMessage(QByteArray message);
     void __processBinaryMessage(QByteArray message, QString channel = "");
     void processTextMessageBB(QString message);
