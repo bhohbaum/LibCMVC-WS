@@ -270,7 +270,7 @@ void SslEchoServer::__processTextMessage(QString msg, QString channel)
     }
     QByteArray bbMessage(messageID.toUtf8());
     bbMessage.append("\n");
-    bbMessage.append(channel);
+    bbMessage.append(channel.toUtf8());
     bbMessage.append("\n");
     bbMessage.append(message);
     if (pClient) {
@@ -399,7 +399,7 @@ void SslEchoServer::__processBinaryMessage(QByteArray message, QString channel)
     QByteArray cMessage(ba);
     QByteArray bbMessage(messageID.toUtf8());
     bbMessage.append("\n");
-    bbMessage.append(channel);
+    bbMessage.append(channel.toUtf8());
     bbMessage.append("\n");
     bbMessage.append(message);
     QtWS::getInstance()->gzipCompress(bbMessage, ba, 9);

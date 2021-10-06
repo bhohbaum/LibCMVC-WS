@@ -422,9 +422,9 @@ void QtWS::sendBackboneMessage(QWebSocket* pSocket,
     bool compressionEnabled)
 {
     QByteArray bbMessage;
-    bbMessage.append(messageID.trimmed());
+    bbMessage.append(messageID.trimmed().toUtf8());
     bbMessage.append("\n");
-    bbMessage.append(channel.trimmed());
+    bbMessage.append(channel.trimmed().toUtf8());
     bbMessage.append("\n");
     bbMessage.append(message);
     QByteArray finalMessage(bbMessage);

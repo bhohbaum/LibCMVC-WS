@@ -54,3 +54,37 @@
     </message>
 </context>
 </TS>
+e>Received channel list update notification from: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qtws/qtws.cpp" line="380"/>
+        <source>Channels: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qtws/qtws.cpp" line="473"/>
+        <source>Could not find message id token in input data!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>WsMetaData</name>
+    <message>
+        <location filename="../qtws/wsmetadata.cpp" line="96"/>
+        <source>Channel list changed for this connnection: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>main</name>
+    <message>
+        <source>Debug output [default: off].</source>
+        <translation type="vanished">Debug-Ausgabe [Ohne Angabe: aus].</translation>
+    </message>
+    <message>
+        <source>Compress data for transmission [default: raw data].</source>
+        <translation type="vanished">Daten zur Übertragung komprimieren [Ohne Angabe: Rohdaten werden gesendet].</translation>
+    </message>
+</context>
+</TS>
